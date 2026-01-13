@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <link rel="manifest" href="./manifest.json"> <!-- Link the manifest for app -->
-
+    <link rel="icon" type="image/png" href="./icon-512.png"><!-- For favicon -->
 
     <!-- <script src="https://raw.githubusercontent.com/mattdaly/Fountain.js/master/fountain.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/gh/mattdaly/Fountain.js@master/fountain.min.js"></script>
@@ -16,7 +16,6 @@
     <!-- Make script for loading offline, register sw.js -->
     <script>
       if ('serviceWorker' in navigator) {
-        // Adding the dot ensures it looks in /fountain-screenplay/sw.js
         navigator.serviceWorker.register('./sw.js')
           .then(() => console.log("Service Worker Registered"))
           .catch(err => console.log("Service Worker Failed", err));
