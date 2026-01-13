@@ -1,0 +1,201 @@
+:root {
+    --nav-height: 60px;
+    --sidebar-width: 40%;
+    --bg-color: #f4f4f9;
+}
+
+body, html {
+    margin: 0;
+    height: 100%;
+    font-family: sans-serif;
+    overflow: hidden;
+}
+
+/* --- Layout --- */
+.top-nav {
+    height: var(--nav-height);
+    background: #222;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.brand { font-weight: bold; font-size: 1.1rem; letter-spacing: 1px; }
+
+.container {
+    display: flex;
+    height: calc(100vh - var(--nav-height));
+}
+
+/* Default State: Preview Hidden */
+.editor-pane {
+    width: 100%; /* Default to full width */
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    transition: width 0.3s ease-in-out;
+}
+
+.viewer-pane {
+    display: none; /* Hidden by default */
+    flex: 1;
+    background: var(--bg-color);
+    overflow-y: auto;
+    padding: 40px;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Show Preview State (Triggered by JS) */
+.show-preview .editor-pane {
+    width: var(--sidebar-width);
+    border-right: 2px solid #ccc;
+}
+
+.show-preview .viewer-pane {
+    display: block;
+}
+
+/* --- Editor & Textarea --- */
+textarea {
+    flex: 1;
+    padding: 40px 15%; /* Default "Zen Mode" padding */
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 18px;
+    border: none;
+    resize: none;
+    outline: none;
+    line-height: 1.5;
+    transition: padding 0.3s ease-in-out;
+}
+
+/* Adjust padding when preview is visible to save space */
+.show-preview textarea {
+    padding: 20px;
+}
+
+.actions {
+    display: flex;
+    align-items: center; /* Vertically centers everything in the row */
+    gap: 10px; /* Standard spacing between all elements */
+}
+
+/* Base button styling */
+.btn {
+    background: #444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    height: 36px; /* Give all buttons a fixed height */
+    padding: 0 16px;
+    display: inline-flex;
+    align-items: center; /* Centers icon/text inside the button */
+    justify-content: center;
+    transition: background 0.2s;
+    box-sizing: border-box;
+}
+
+.btn:hover { background: #555; }
+.btn-primary { background: #007bff; }
+.btn-primary:hover { background: #0056b3; }
+
+.btn-icon-text .material-symbols-outlined {
+    font-size: 24px;
+}
+
+.control-group {
+    background: #333;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-right: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #ccc;
+}
+
+.btn-icon {
+    background: #555;
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon:hover { background: #777; }
+
+.divider {
+    color: #555;
+    margin: 0 10px;
+    font-weight: 100;
+}
+
+/* --- Screenplay (Output) Styling --- */
+#output {
+    background: white;
+    width: 8.5in;
+    min-height: 11in;
+    margin: 0 auto;
+    padding: 1in;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    font-family: "Courier Prime", "Courier New", Courier, monospace;
+    font-size: 12pt;
+    line-height: 1.2;
+    color: #000;
+}
+
+/* Ensure notes are visible by default in the viewer */
+#output .note {
+    display: block;
+    background-color: #fff9c4;
+    border-left: 5px solid #fbc02d;
+    padding: 10px;
+    margin: 10px 0;
+    font-family: sans-serif;
+}
+
+/* This targets notes ONLY when the parent has the hide-notes class */
+#output.hide-notes .note {
+    display: none !important;
+}
+
+/* This class should only trigger when you click the 'Hide Notes' button */
+.hide-notes .note {
+    display: none !important;
+}
+
+/* Screenplay Element Formatting */
+#output h4 { text-align: center; text-decoration: underline; text-transform: uppercase; margin-bottom: 2em; }
+#output h1 { text-transform: uppercase; margin-top: 2em; margin-bottom: 1em; }
+#output .character { text-align: center; width: 50%; margin: 1em auto 0 auto; text-transform: uppercase; }
+#output .parenthetical { text-align: center; width: 35%; margin: 0 auto; }
+#output .dialogue { text-align: center; width: 70%; margin: 0 auto 1em auto; }
+#output .transition { text-align: right; text-transform: uppercase; margin-top: 2em; }
+
+/* --- Print Rules --- */
+@media print {
+    body, html { overflow: visible !important; height: auto !important; }
+    .top-nav, .editor-pane { display: none !important; }
+    .container { display: block !important; height: auto !important; }
+    .viewer-pane { padding: 0 !important; margin: 0 !important; overflow: visible !important; display: block !important; }
+    #output { box-shadow: none !important; width: 100% !important; padding: 0 !important; border: none !important; }
+    #output .note {
+        display: block !important;
+        background-color: #f0f0f0 !important;
+        border: 1px dashed #ccc !important;
+    }
+    /* If the user has 'Hide Notes' active during print, respect that */
+    .hide-notes .note { display: none !important; }
+}
+
+@page { size: letter; margin: 1in; }

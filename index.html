@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fountain Screenwriter 2026</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    <script src="fountain.min.js"></script>
+</head>
+<body>
+
+    <div class="top-nav">
+        <div class="brand">FOSS Fountain Screenwriter | By Vinimay Kaul</div>
+        <div class="actions">
+            <button class="btn btn-icon-text" id="openBtn" title="Open (Ctrl+O)">
+                <span class="material-symbols-outlined">file_open</span>
+            </button>
+            <button class="btn btn-icon-text" id="saveBtn" title="Open (Ctrl+S)">
+                <span class="material-symbols-outlined">save</span>
+            </button>
+
+            <span class="divider">|</span>
+
+            <span class="control-group">
+                <button class="btn-icon" id="decreaseFont" title="Decrease Font">-</button>
+                <span id="fontSizeDisplay">18px</span>
+                <button class="btn-icon" id="increaseFont" title="Increase Font">+</button>
+            </span>
+
+            <button class="btn" id="togglePreviewBtn" title="Toggle Preview (Ctrl+;)">Show Preview</button>
+            <button class="btn" id="toggleNotesBtn" title="Toggle Preview (Ctrl+m)">Hide Notes</button>
+            <button class="btn btn-primary" onclick="window.print()" title="Open (Ctrl+P)">Print to PDF</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="editor-pane">
+            <textarea id="editor" placeholder="Type your Fountain script here...">
+
+INT. COFFEE SHOP - DAY
+
+The steam rises from a cup.
+
+{{Please Note that in this version, Notes can be added using double { instead of double [ }}
+
+JOHN
+(nervously)
+Is this working?
+
+MARY
+It is. It's rendering perfectly.</textarea>
+        </div>
+
+        <div class="viewer-pane">
+            <div id="output"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
