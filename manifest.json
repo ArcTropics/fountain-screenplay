@@ -1,0 +1,22 @@
+{
+  "name": "Fountain Screenwriter 2026",
+  "short_name": "Fountain2026",
+  "description": "A professional minimalist screenwriting tool.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1e1e1e",
+  "theme_color": "#222222",
+  "icons": [
+  {
+    "src": "icon-512.png",
+    "sizes": "192x192",
+    "type": "image/png"
+  },
+  {
+    "src": "icon-512.png",
+    "sizes": "512x512",
+    "type": "image/png"
+  }
+]
+}

@@ -16,8 +16,10 @@
     <!-- Make script for loading offline, register sw.js -->
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-          .then(() => console.log("Service Worker Registered"));
+        // Adding the dot ensures it looks in /fountain-screenplay/sw.js
+        navigator.serviceWorker.register('./sw.js')
+          .then(() => console.log("Service Worker Registered"))
+          .catch(err => console.log("Service Worker Failed", err));
       }
     </script>
 
