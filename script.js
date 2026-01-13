@@ -9,11 +9,115 @@ const decreaseBtn = document.getElementById('decreaseFont');
 const openBtn = document.getElementById('openBtn');
 const saveBtn = document.getElementById('saveBtn');
 
+const librarySidebar = document.getElementById('librarySidebar');
+const scriptListContainer = document.getElementById('scriptList');
+const toggleLibraryBtn = document.getElementById('toggleLibraryBtn');
+const closeLibraryBtn = document.getElementById('closeLibraryBtn');
+const createNewBtn = document.getElementById('createNewBtn');
+const titleDisplay = document.getElementById('currentActiveTitle');
 
 let currentFontSize = 18;
+let currentScriptTitle = null;
+
+
+
+// Logic to show hide left project BAR
+// --- 1. Library UI Toggles ---
+toggleLibraryBtn.addEventListener('click', () => {
+    librarySidebar.classList.toggle('open');
+    updateLibraryList();
+});
+
+closeLibraryBtn.addEventListener('click', () => {
+    librarySidebar.classList.remove('open');
+});
+
+
+// --- 2. Logic to Save/Load ---
+function updateLibraryList() {
+    const scripts = JSON.parse(localStorage.getItem('fountain_library') || '{}');
+    scriptListContainer.innerHTML = '';
+
+    Object.keys(scripts).forEach(name => {
+        const div = document.createElement('div');
+
+        // Add an 'active' class if this is the script we are currently editing
+        const isActive = (name === currentScriptTitle);
+        div.className = `script-item ${isActive ? 'active' : ''}`;
+
+        div.innerHTML = `
+            <span>${name}</span>
+            <span class="delete-btn" onclick="event.stopPropagation(); deleteFromLibrary('${name}')">&times;</span>
+        `;
+
+        div.onclick = () => loadFromLibrary(name);
+        scriptListContainer.appendChild(div);
+    });
+}
+
+// --- 2. Load Script from Sidebar ---
+// --- Updated Load Function ---
+function loadFromLibrary(name) {
+    const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
+
+    currentScriptTitle = name;
+    editor.value = library[name] || "";
+
+    // NEW: Save this name as the "Last Active" script
+    localStorage.setItem('last_active_script', name);
+
+    render();
+    updateLibraryList(); // Refresh list to show which one is active
+    librarySidebar.classList.remove('open');
+}
+
+function deleteFromLibrary(name) {
+    if (confirm(`Delete "${name}"? This cannot be undone.`)) {
+        const scripts = JSON.parse(localStorage.getItem('fountain_library') || '{}');
+        delete scripts[name];
+        localStorage.setItem('fountain_library', JSON.stringify(scripts));
+        updateLibraryList();
+    }
+}
+
+// Override your existing Save logic to also save to library
+async function saveToLibrary() {
+    const name = prompt("Enter a name for this script:", "Untitled Script");
+    if (!name) return;
+
+    const scripts = JSON.parse(localStorage.getItem('fountain_library') || '{}');
+    scripts[name] = editor.value;
+    localStorage.setItem('fountain_library', JSON.stringify(scripts));
+    updateLibraryList();
+}
+
+// --- Updated Create Function ---
+createNewBtn.addEventListener('click', () => {
+    const name = prompt("Enter a name for your new script:");
+    if (name) {
+        const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
+        library[name] = "";
+        localStorage.setItem('fountain_library', JSON.stringify(library));
+
+        currentScriptTitle = name;
+        // NEW: Save this as the "Last Active" script immediately
+        localStorage.setItem('last_active_script', name);
+
+        editor.value = "";
+        render();
+        updateLibraryList();
+        librarySidebar.classList.remove('open');
+    }
+});
+
+
+/**********************************************/
 
 // --- 1. RENDER LOGIC ---
 function render() {
+    // Lets show the correct title first
+    titleDisplay.innerText = currentScriptTitle ? `Editing: ${currentScriptTitle}` : "No script active";
+
     // 1. Get the raw text from the editor
     const rawText = editor.value.trim();
 
@@ -101,6 +205,25 @@ async function saveFile() {
     } catch (err) { console.error("Save cancelled", err); }
 }
 
+// functions to save automatically in browser
+// Function to save a script with a specific name
+function saveToBrowser(scriptName) {
+    const scripts = JSON.parse(localStorage.getItem('my_scripts') || '{}');
+
+    scripts[scriptName] = {
+        content: editor.value,
+        lastModified: new Date().toISOString()
+    };
+
+    localStorage.setItem('my_scripts', JSON.stringify(scripts));
+    alert(`Script "${scriptName}" saved to browser!`);
+}
+
+// Function to load a list of all saved scripts
+function getSavedScripts() {
+    return JSON.parse(localStorage.getItem('my_scripts') || '{}');
+}
+
 // --- 6. KEYBOARD SHORTCUTS ---
 window.addEventListener('keydown', function(event) {
     const isControl = event.ctrlKey || event.metaKey;
@@ -146,7 +269,35 @@ window.addEventListener('keydown', function(event) {
 });
 
 // --- 7. EVENT LISTENERS ---
-editor.addEventListener('input', render);
+// --- 3. Integrated Auto-Save ---
+// This replaces your previous auto-save to save to the specific script
+editor.addEventListener('input', () => {
+    if (currentScriptTitle) {
+        const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
+        library[currentScriptTitle] = editor.value;
+        localStorage.setItem('fountain_library', JSON.stringify(library));
+    }
+    render();
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+    const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
+    const lastActive = localStorage.getItem('last_active_script');
+    const keys = Object.keys(library);
+
+    if (keys.length > 0) {
+        // 1. Try to load the script you were last editing
+        if (lastActive && library[lastActive] !== undefined) {
+            loadFromLibrary(lastActive);
+        } else {
+            // 2. If that fails, just load the first one available
+            loadFromLibrary(keys[0]);
+        }
+    } else {
+        render(); // Show the "Empty" message if no scripts exist
+    }
+});
+
 toggleNotesBtn.addEventListener('click', toggleNotes);
 togglePreviewBtn.addEventListener('click', togglePreview);
 increaseBtn.addEventListener('click', () => updateFontSize(2));

@@ -16,7 +16,10 @@
 
     <div class="top-nav">
         <div class="brand">FOSS Fountain Screenwriter | By Vinimay Kaul</div>
-        <div class="actions">
+            <div id="currentActiveTitle" style="color: #888; font-style: italic; font-size: 0.9rem; margin-left: 15px;">
+              No script active
+            </div>
+            <div class="actions">
             <button class="btn btn-icon-text" id="openBtn" title="Open (Ctrl+O)">
                 <span class="material-symbols-outlined">file_open</span>
             </button>
@@ -38,6 +41,22 @@
         </div>
     </div>
 
+    <!-- ADDING THE LEFT PROJECT BAR -->
+
+    <button class="btn-icon" id="toggleLibraryBtn" title="Project Library">
+      <span class="material-symbols-outlined">library_books</span>
+    </button>
+
+    <div id="librarySidebar" class="sidebar-left">
+      <div class="sidebar-header">
+        <h3>My Scripts</h3>
+        <button id="closeLibraryBtn">&times;</button>
+      </div>
+      <div id="scriptList"></div>
+      <button class="btn-primary" id="createNewBtn" style="width: 90%; margin: 10px 5%;color:white;">+ New Script</button>
+    </div>
+
+    <!-- MAIN CONTAINER -->
     <div class="container">
         <div class="editor-pane">
             <textarea id="editor" placeholder="Type your Fountain script here...">
