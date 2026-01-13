@@ -7,9 +7,19 @@
 
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="manifest" href="manifest.json"> <!-- Link the manifest for app -->
+
 
     <!-- <script src="https://raw.githubusercontent.com/mattdaly/Fountain.js/master/fountain.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/gh/mattdaly/Fountain.js@master/fountain.min.js"></script>
+
+    <!-- Make script for loading offline, register sw.js -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+          .then(() => console.log("Service Worker Registered"));
+      }
+    </script>
 
 </head>
 <body>
