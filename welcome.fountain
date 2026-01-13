@@ -1,0 +1,61 @@
+
+INT. CAFE - DAY
+
+The Sound of Coffee machine steam in the background. JOHN and JANE sip their coffee. John sips his coffee while Jane take a bite of her cookie. They both look at Jane's laptop screen.
+
+JOHN
+What is this application?
+
+JANE
+This is a free Screenwriting app using "fountain" syntax
+
+The reader wonders but continues.
+
+JOHN
+What is fountain?
+
+JANE
+Fountain is a markup language designed for writing screenplays. In this application you can write in fountain markup on the left pane and view it in the form of a screenplay on the right pane. 
+
+JOHN
+Oh wow!
+
+JANE
+You can also hide or show the preview pane. You can print the script as well as export as PDF by printing as PDF. 
+
+John wonders. He takes another sip and puts down the cup. 
+
+JOHN
+How can I find the syntax for fountain?
+
+JANE
+Just visit https://fountain.io/syntax/
+
+JANE
+(continues)
+You can click on the top left to open left bar and create a New script by clicking "+ New Script" button. It will ask for a name. Just give it a name and start typing. You can make multiple scripts and all these are saved on your browser. 
+
+JOHN
+What do you mean "saved on my browser"?
+
+JANE
+The data for your script is stored on the browser, if you ever delete or Browser data your scripts will be gone. But until then every time you open this browser with the same profile your scripts will be available. you can edit them and they will be saved automatically.
+
+JOHN
+So how about if i want to save them somewhere else?
+
+JANE
+You can click "Ctrl + S" to save the file as a .fountain or .md or .txt. You can also open a file by pressing "Ctrl + O". 
+
+JOHN
+Impressive!
+
+JANE
+Remember, if you want to add notes, you use double curly brackets { like these not the double square brackets [. 
+
+{{This is a sample note.}}
+
+JANE
+(continues)
+You can also show or hide notes for preview and print by pressing "Ctrl + m"
+

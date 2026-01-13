@@ -245,19 +245,76 @@ textarea {
 #output .transition { text-align: right; text-transform: uppercase; margin-top: 2em; }
 
 /* --- Print Rules --- */
+/* --- Optimized Print Rules --- */
 @media print {
-    body, html { overflow: visible !important; height: auto !important; }
-    .top-nav, .editor-pane { display: none !important; }
-    .container { display: block !important; height: auto !important; }
-    .viewer-pane { padding: 0 !important; margin: 0 !important; overflow: visible !important; display: block !important; }
-    #output { box-shadow: none !important; width: 100% !important; padding: 0 !important; border: none !important; }
-    #output .note {
-        display: block !important;
-        background-color: #f0f0f0 !important;
-        border: 1px dashed #ccc !important;
+    /* 1. Reset Global Layout to allow flow across multiple pages */
+    body, html {
+        overflow: visible !important;
+        height: auto !important;
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
-    /* If the user has 'Hide Notes' active during print, respect that */
-    .hide-notes .note { display: none !important; }
+
+    /* 2. Hide UI elements completely */
+    .top-nav,
+    .editor-pane,
+    .sidebar-left,
+    #librarySidebar,
+    .actions,
+    #currentActiveTitle,
+    .btn {
+        display: none !important;
+    }
+
+    /* 3. Force containers to expand naturally */
+    .container {
+        display: block !important;
+        height: auto !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+    }
+
+    .viewer-pane {
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        position: static !important; /* Crucial for page breaking */
+    }
+
+    /* 4. Remove the shadow box from the script */
+    #output {
+        box-shadow: none !important;
+        width: 100% !important;
+        padding: 0 !important;
+        border: none !important;
+        margin: 0 !important;
+        background: white !important;
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    /* 5. Standardize Note appearance for print */
+    #output .note {
+        box-shadow: none !important;
+        display: block !important;
+        background-color: #f9f9f9 !important; /* Very light gray */
+        border: 1px dashed #ccc !important;
+        margin: 10px 0 !important;
+        padding: 10px !important;
+        page-break-inside: avoid; /* Prevents a note from splitting mid-sentence across two pages */
+    }
+
+    /* Respect the 'Hide Notes' toggle */
+    .hide-notes .note {
+        display: none !important;
+    }
 }
 
 @page { size: letter; margin: 1in; }
