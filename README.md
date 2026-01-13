@@ -7,11 +7,7 @@ This application is just a web view for writing and viewing Screenplays written 
 
 ## Dependency
 
-This application requires fountain.min.js from [Matt Daly's GitHub repository](https://github.com/mattdaly/Fountain.js). I am using cdn to link
-
-```
-<script src="https://cdn.jsdelivr.net/gh/mattdaly/Fountain.js@master/fountain.min.js"></script>
-```
+This application uses a modified version of  fountain.min.js from [Matt Daly's GitHub repository](https://github.com/mattdaly/Fountain.js). I modified it to add support for lates fountain syntax as per Jan 2026. File fountain2026.js
 
 If you want to download and modify you can download from the Matt's repository.
 
