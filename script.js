@@ -16,13 +16,15 @@ const closeLibraryBtn = document.getElementById('closeLibraryBtn');
 const createNewBtn = document.getElementById('createNewBtn');
 const titleDisplay = document.getElementById('currentActiveTitle');
 
+const fountainInstance = new fountain();
+
 let currentFontSize = 18;
 let currentScriptTitle = null;
 
 
 
 // Logic to show hide left project BAR
-// --- 1. Library UI Toggles ---
+
 toggleLibraryBtn.addEventListener('click', () => {
     librarySidebar.classList.toggle('open');
     updateLibraryList();
@@ -33,7 +35,7 @@ closeLibraryBtn.addEventListener('click', () => {
 });
 
 
-// --- 2. Logic to Save/Load ---
+// Logic to Save/Load ---
 function updateLibraryList() {
     const scripts = JSON.parse(localStorage.getItem('fountain_library') || '{}');
     scriptListContainer.innerHTML = '';
@@ -45,29 +47,26 @@ function updateLibraryList() {
         const isActive = (name === currentScriptTitle);
         div.className = `script-item ${isActive ? 'active' : ''}`;
 
-        div.innerHTML = `
-            <span>${name}</span>
-            <span class="delete-btn" onclick="event.stopPropagation(); deleteFromLibrary('${name}')">&times;</span>
-        `;
+        div.innerHTML = `<span>${name}</span>
+            <span class="delete-btn" onclick="event.stopPropagation(); deleteFromLibrary('${name}')">&times;</span>`;
 
         div.onclick = () => loadFromLibrary(name);
         scriptListContainer.appendChild(div);
     });
 }
 
-// --- 2. Load Script from Sidebar ---
-// --- Updated Load Function ---
+// Load Script from Sidebar ---
 function loadFromLibrary(name) {
     const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
 
     currentScriptTitle = name;
     editor.value = library[name] || "";
 
-    // NEW: Save this name as the "Last Active" script
+    // Save this name as the "Last Active" script
     localStorage.setItem('last_active_script', name);
 
     render();
-    updateLibraryList(); // Refresh list to show which one is active
+    updateLibraryList(); // Refresh to show which one is active
     librarySidebar.classList.remove('open');
 }
 
@@ -80,7 +79,7 @@ function deleteFromLibrary(name) {
     }
 }
 
-// Override your existing Save logic to also save to library
+// Override the existing Save logic to make sure we also save to library
 async function saveToLibrary() {
     const name = prompt("Enter a name for this script:", "Untitled Script");
     if (!name) return;
@@ -91,7 +90,7 @@ async function saveToLibrary() {
     updateLibraryList();
 }
 
-// --- Updated Create Function ---
+// --- Create Function to create a new script ---
 createNewBtn.addEventListener('click', () => {
     const name = prompt("Enter a name for your new script:");
     if (name) {
@@ -115,15 +114,16 @@ createNewBtn.addEventListener('click', () => {
 
 // --- 1. RENDER LOGIC ---
 function render() {
-    // Lets show the correct title first
+    //  Update the title display
     titleDisplay.innerText = currentScriptTitle ? `Editing: ${currentScriptTitle}` : "No script active";
 
-    // 1. Get the raw text from the editor
-    const rawText = editor.value.trim();
+    // Get the raw text from the editor
+    const rawText = editor.value; // removed .trim() here so we don't lose leading spaces needed for Fountain
 
-    // 2. If the editor is empty, show the placeholder message and stop
-    if (!rawText) {
-        output.innerHTML = `
+    // If the editor is empty, show the placeholder and stop
+    if (!rawText.trim()) {
+        const outputDisplay = document.getElementById('output'); // Make sure we have the display element
+        outputDisplay.innerHTML = `
             <div style="text-align: center; color: #888; margin-top: 100px;">
                 <span class="material-symbols-outlined" style="font-size: 48px; display: block; margin-bottom: 10px;">edit_note</span>
                 <p>It seems like your script is empty. <br> Please type something to view the preview.</p>
@@ -131,22 +131,28 @@ function render() {
         return;
     }
 
-    // 3. Otherwise, proceed with parsing
-    const result = fountain.parse(rawText);
+    // Run the parser (saving the result into 'parsedData')
+    const parsedData = fountainInstance.parse(rawText);
 
-    // We use "|| ''" to ensure that if title_page or script is missing, it doesn't say "undefined"
-    let htmlOutput = (result.html.title_page || "") + (result.html.script || "");
+    // parsedData to html
+    let htmlOutput = parsedData.html;
 
-    // 4. Apply your custom {{ note }} logic
+    // Apply the custom {{ note }} logic
+    // (Note: The new fountain.js handles [[ notes ]], but this keeps my custom {{ }} working too!)
     const customNoteRegex = /\{\{([\s\S]*?)\}\}/g;
     htmlOutput = htmlOutput.replace(customNoteRegex, function(match, noteText) {
         return '<div class="note">' + noteText.trim() + '</div>';
     });
 
-    output.innerHTML = htmlOutput;
+    // Update the actual screen
+    const outputDisplay = document.getElementById('output');
+    outputDisplay.innerHTML = htmlOutput;
 }
+// ENd of Render
 
-// --- 2. TOGGLE NOTES ---
+
+
+// TOGGLE NOTES
 function toggleNotes() {
     // Toggle the class on the output div
     output.classList.toggle('hide-notes');
@@ -159,7 +165,7 @@ function toggleNotes() {
     }
 }
 
-// --- 3. SHOW/HIDE PREVIEW ---
+// sHow Hide Preveiw
 function togglePreview() {
     container.classList.toggle('show-preview');
 
@@ -170,14 +176,14 @@ function togglePreview() {
     }
 }
 
-// --- 4. FONT SIZE LOGIC ---
+// Font Size Change Logic ---
 function updateFontSize(delta) {
     currentFontSize = Math.min(Math.max(currentFontSize + delta, 10), 40);
     editor.style.fontSize = `${currentFontSize}px`;
     fontSizeDisplay.innerText = `${currentFontSize}px`;
 }
 
-// --- 5. FILE OPERATIONS ---
+// File Operations logic
 const fileOptions = {
     types: [{
         description: 'Fountain Script',
@@ -201,11 +207,9 @@ async function saveFile() {
         const writable = await handle.createWritable();
         await writable.write(editor.value);
         await writable.close();
-        // Removed alert for better UX, but you can add it back if you like
     } catch (err) { console.error("Save cancelled", err); }
 }
 
-// functions to save automatically in browser
 // Function to save a script with a specific name
 function saveToBrowser(scriptName) {
     const scripts = JSON.parse(localStorage.getItem('my_scripts') || '{}');
@@ -224,7 +228,7 @@ function getSavedScripts() {
     return JSON.parse(localStorage.getItem('my_scripts') || '{}');
 }
 
-// --- 6. KEYBOARD SHORTCUTS ---
+// Keyboard shortcuts implmentations
 window.addEventListener('keydown', function(event) {
     const isControl = event.ctrlKey || event.metaKey;
 
@@ -268,9 +272,7 @@ window.addEventListener('keydown', function(event) {
     }
 });
 
-// --- 7. EVENT LISTENERS ---
-// --- 3. Integrated Auto-Save ---
-// This replaces your previous auto-save to save to the specific script
+// Adding event listeners
 editor.addEventListener('input', () => {
     if (currentScriptTitle) {
         const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
@@ -305,6 +307,5 @@ decreaseBtn.addEventListener('click', () => updateFontSize(-2));
 openBtn.addEventListener('click', openFile);
 saveBtn.addEventListener('click', saveFile);
 
-// --- 8. INITIALIZATION ---
-// This ensures the UI matches your "Hidden Preview" CSS on load
+// Call render to begin.
 render();

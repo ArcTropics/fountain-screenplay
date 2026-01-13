@@ -1,7 +1,8 @@
 :root {
     --nav-height: 60px;
-    --sidebar-width: 40%;
+    --sidebar-width: 100%;
     --bg-color: #f4f4f9;
+    --solo-padding: 0px 200px
 }
 
 body, html {
@@ -32,30 +33,32 @@ body, html {
 
 /* Default State: Preview Hidden */
 .editor-pane {
-    width: 100%; /* Default to full width */
+    width: 40%; /* Default to full width */
     display: flex;
     flex-direction: column;
     background: #fff;
-    transition: width 0.3s ease-in-out;
+    transition: all 0.6s ease-in-out;
 }
 
 .viewer-pane {
-    display: none; /* Hidden by default */
+    display: block; /* Hidden by default */
     flex: 1;
     background: var(--bg-color);
     overflow-y: auto;
     padding: 40px;
-    transition: all 0.3s ease-in-out;
+    transition: all 0.6s ease-in-out;
 }
 
 /* Show Preview State (Triggered by JS) */
 .show-preview .editor-pane {
     width: var(--sidebar-width);
     border-right: 2px solid #ccc;
+    padding: var(--solo-padding);
 }
 
 .show-preview .viewer-pane {
-    display: block;
+    display: none;
+    transition: display 0.3s ease-in-out;
 }
 
 /* --- Editor & Textarea --- */
@@ -68,7 +71,7 @@ textarea {
     resize: none;
     outline: none;
     line-height: 1.5;
-    transition: padding 0.3s ease-in-out;
+    transition: padding 0.6s ease-in-out;
 }
 
 /* Adjust padding when preview is visible to save space */
@@ -216,6 +219,29 @@ textarea {
     color: #000;
 }
 
+
+
+/* Screenplay Element Formatting */
+
+/* Transitions like FADE TO: */
+#output h2 {
+    text-align: right;
+    text-transform: uppercase;
+    font-size: 1em;
+    width: 100%;
+    margin-top: 2em;
+    margin-bottom: 1em;
+}
+
+/* Scene Headings - Bold and Full width */
+#output h3 {
+    text-align: left;
+    width: 100%;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-top: 2em;
+}
+
 /* Ensure notes are visible by default in the viewer */
 #output .note {
     display: block;
@@ -236,17 +262,132 @@ textarea {
     display: none !important;
 }
 
-/* Screenplay Element Formatting */
-#output h4 { text-align: center; text-decoration: underline; text-transform: uppercase; margin-bottom: 2em; }
-#output h1 { text-transform: uppercase; margin-top: 2em; margin-bottom: 1em; }
-#output .character { text-align: center; width: 50%; margin: 1em auto 0 auto; text-transform: uppercase; }
-#output .parenthetical { text-align: center; width: 35%; margin: 0 auto; }
-#output .dialogue { text-align: center; width: 70%; margin: 0 auto 1em auto; }
-#output .transition { text-align: right; text-transform: uppercase; margin-top: 2em; }
 
-/* --- Print Rules --- */
+/* Scene Headings (h1 or h3 depending on your parser) */
+#output h1, #output h3 {
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-top: 2em;
+    margin-bottom: 1em;
+    text-align: left;
+}
+
+/* Character Names */
+#output .character, #output h4 {
+    text-align: center;
+    width: 100%;
+    margin-top: 1.5em;
+    margin-bottom: 0.1em;
+    text-transform: uppercase;
+    font-weight: normal; /* Standard scripts don't bold characters */
+}
+
+/* Parentheticals - Narrower than dialogue */
+#output .parenthetical {
+    text-align: left;
+    width: 30%;
+    margin: 0 auto;
+    font-style: normal;
+}
+#output .parenthetical::before { content: "("; }
+#output .parenthetical::after { content: ")"; }
+
+/* Dialogue - The central column */
+#output .dialogue {
+    text-align: left;
+    width: 55%;
+    margin: 0 auto 1em auto;
+}
+
+/* Transitions - Right Aligned */
+#output .transition, #output h2 {
+    text-align: right;
+    width: 100%;
+    text-transform: uppercase;
+    margin: 2em 0;
+    display: block;
+}
+
+/* Action Lines (General Paragraphs) */
+#output p {
+    text-align: left;
+    width: 100%;
+    margin: 1em 0;
+    line-height: 1.2;
+}
+
+/* Title Page Formatting */
+
+/* THE ALL-CENTERED TITLE PAGE */
+#output .title-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;    /* Keeps Title/Author centered */
+    text-align: center;
+    min-height: 8.5in;      /* Full page height */
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0;
+    padding-top: 50%;
+}
+
+#output .tp-title {
+    font-weight: bold;
+    text-decoration: underline;
+    text-transform: uppercase;
+    font-size: 1.3em;
+    margin-bottom: 2em;
+    justify-content: center; /* Center vertically */
+    text-align: center;
+}
+
+#output .tp-bottom-left-group {
+    margin-top: auto;       /* Pushes the stack to the bottom */
+    align-self: flex-start;  /* Snaps the stack to the left */
+    text-align: left;       /* Left-aligns text inside the stack */
+    padding-bottom: 0.5in;
+    padding-left: 0.5in;    /* Standard margin from the left edge */
+}
+
+#output .tp-draft_date {
+    margin-bottom: 0.2em;   /* Small gap between date and address */
+    font-weight: normal;
+}
+
+#output .tp-contact-block {
+    white-space: pre-line;
+    line-height: 1.2;
+}
+
+#output .tp-author, #output .tp-credit, #output .tp-source {
+    margin-bottom: 0.5em;
+    justify-content: center; /* Center vertically */
+    text-align: center;
+}
+
+/* The Page Break Line */
+.page-break {
+    display: block;
+    border-top: 2px dashed #ccc; /* Shows a dashed line in the preview */
+    margin: 40px 0;
+    height: 0;
+    line-height: 0;
+    page-break-after: always; /* Essential for Printing/PDF */
+    break-after: page;
+}
+
+/* Other Elements */
+#output .centered { text-align: center; width: 100%; }
+#output .section-heading { color: #888; font-weight: bold; margin-top: 20px; border-bottom: 1px solid #eee; }
+#output .synopsis { color: #666; font-style: italic; margin-bottom: 10px; }
+#output .scene-number { float: right; font-weight: normal; }
+
+
 /* --- Optimized Print Rules --- */
 @media print {
+
+  .page-break { border: none; margin: 0; }
+
     /* 1. Reset Global Layout to allow flow across multiple pages */
     body, html {
         overflow: visible !important;
@@ -256,7 +397,6 @@ textarea {
         padding: 0 !important;
     }
 
-    /* 2. Hide UI elements completely */
     .top-nav,
     .editor-pane,
     .sidebar-left,
@@ -267,7 +407,6 @@ textarea {
         display: none !important;
     }
 
-    /* 3. Force containers to expand naturally */
     .container {
         display: block !important;
         height: auto !important;
@@ -287,7 +426,7 @@ textarea {
         position: static !important; /* Crucial for page breaking */
     }
 
-    /* 4. Remove the shadow box from the script */
+    /* Remove the shadow box from the script */
     #output {
         box-shadow: none !important;
         width: 100% !important;
@@ -300,7 +439,6 @@ textarea {
         overflow: visible !important;
     }
 
-    /* 5. Standardize Note appearance for print */
     #output .note {
         box-shadow: none !important;
         display: block !important;
@@ -311,7 +449,7 @@ textarea {
         page-break-inside: avoid; /* Prevents a note from splitting mid-sentence across two pages */
     }
 
-    /* Respect the 'Hide Notes' toggle */
+    /*  'Hide Notes' toggle */
     .hide-notes .note {
         display: none !important;
     }
