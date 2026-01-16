@@ -1,8 +1,7 @@
 :root {
     --nav-height: 60px;
-    --sidebar-width: 100%;
+    --sidebar-width: 40%; /* Desktop split ratio */
     --bg-color: #f4f4f9;
-    --solo-padding: 0px 200px
 }
 
 body, html {
@@ -24,59 +23,121 @@ body, html {
     box-sizing: border-box;
 }
 
-.brand { font-weight: bold; font-size: 1.1rem; letter-spacing: 1px; }
-
+/* --- Desktop Default (Side-by-Side) --- */
 .container {
     display: flex;
-    height: calc(100vh - var(--nav-height));
+    height: calc(100vh - 60px); /* 60px is your nav height */
+    width: 100vw;
+    transition: all 0.3s ease;
 }
 
-/* Default State: Preview Hidden */
 .editor-pane {
-    width: 40%; /* Default to full width */
+    width: 100%; /* Default to full width (Zen Mode) */
     display: flex;
+    flex: 1;
     flex-direction: column;
     background: #fff;
-    transition: all 0.6s ease-in-out;
+    transition: width 0.4s ease-in-out;
+}
+
+#editor {
+    flex: 1;
+    width: 100% !important;
+    height: 100%;
+    border: none;
+    outline: none;
+    box-sizing: border-box;
+    /* Zen padding for Desktop */
+    padding: 60px 20%;
+    line-height: 1.6;
+    transition: padding 0.3s ease;
 }
 
 .viewer-pane {
-    display: block; /* Hidden by default */
+    display: none; /* Hidden by default in Zen Mode */
     flex: 1;
     background: var(--bg-color);
     overflow-y: auto;
     padding: 40px;
-    transition: all 0.6s ease-in-out;
+    border-left: 2px solid #ccc;
 }
 
-/* Show Preview State (Triggered by JS) */
-.show-preview .editor-pane {
-    width: var(--sidebar-width);
-    border-right: 2px solid #ccc;
-    padding: var(--solo-padding);
+/* FOR DESKTOP SHOW PREVIEW LOGIc*/
+.container.show-preview .editor-pane {
+    width: 40% !important; /* Shrink editor to make room */
 }
 
-.show-preview .viewer-pane {
-    display: none;
-    transition: display 0.3s ease-in-out;
+.container.show-preview .viewer-pane {
+    display: block !important; /* Show the preview */
 }
 
-/* --- Editor & Textarea --- */
+
+/* --- Mobile Toggle Styles (The "One-at-a-time" Logic) --- */
+@media (max-width: 1024px) {
+    /* 1. Force the container to take the full remaining height */
+    .container {
+        display: block; /* Switch from flex to block for simpler mobile stacking */
+        height: calc(100vh - 60px); /* Adjust 60px to match your nav height */
+        width: 100vw;
+        position: relative;
+    }
+
+    /* 2. Make the Editor Pane fill that container entirely */
+    .editor-pane {
+        width: 100% !important;
+        height: 100% !important; /* This is the critical line */
+        display: block;
+    }
+
+    /* 3. Make the Textarea fill the Editor Pane */
+    #editor {
+        width: 100% !important;
+        height: 100% !important; /* Force it to grow beyond 2 lines */
+        padding: 20px !important; /* Remove the huge Zen side-margins */
+        margin: 0;
+        box-sizing: border-box;
+        display: block;
+        border: none;
+    }
+
+    /* 4. Ensure Viewer Pane also fills screen when active */
+    .viewer-pane {
+        width: 100% !important;
+        height: 100% !important;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: white;
+        z-index: 10; /* Sits on top of the editor */
+        display: none; /* Controlled by .show-preview */
+    }
+
+    /* 5. The Switch */
+    .container.show-preview .viewer-pane {
+        display: block !important;
+    }
+
+    .container.show-preview .editor-pane {
+        display: none !important;
+    }
+}
+
+/* --- Editor Textarea --- */
 textarea {
     flex: 1;
-    padding: 40px 15%; /* Default "Zen Mode" padding */
-    font-family: 'Courier New', Courier, monospace;
+    padding: 60px 20%; /* Zen Mode padding */
+    font-family: 'Courier Prime', 'Courier New', monospace;
     font-size: 18px;
     border: none;
     resize: none;
     outline: none;
-    line-height: 1.5;
-    transition: padding 0.6s ease-in-out;
+    line-height: 1.6;
+    transition: padding 0.4s ease;
 }
 
 /* Adjust padding when preview is visible to save space */
-.show-preview textarea {
-    padding: 20px;
+.container.show-preview textarea {
+    padding: 30px 40px;
 }
 
 .actions {
@@ -217,6 +278,14 @@ textarea {
     font-size: 12pt;
     line-height: 1.2;
     color: #000;
+
+
+    font-size: clamp(12px, 2.2vw, 18px);
+
+    line-height: 1.4;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5vw;
 }
 
 
@@ -376,6 +445,35 @@ textarea {
     break-after: page;
 }
 
+/* Bottom Status bar */
+/* Floating Status Bar */
+.floating-status {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(34, 34, 34, 0.85);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-style: italic;
+    z-index: 999;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255,255,255,0.1);
+    pointer-events: none;
+}
+
+/* Hide it when the Sidebar is open so they don't overlap on mobile */
+#librarySidebar.open ~ .floating-status {
+    opacity: 0;
+}
+
+/* Optional: Hide it when in Preview mode on mobile to keep the script clean */
+.show-preview .floating-status {
+    opacity: 0.3;
+}
+
+
 /* Other Elements */
 #output .centered { text-align: center; width: 100%; }
 #output .section-heading { color: #888; font-weight: bold; margin-top: 20px; border-bottom: 1px solid #eee; }
@@ -383,8 +481,60 @@ textarea {
 #output .scene-number { float: right; font-weight: normal; }
 
 
+/* --- About Modal Styles --- */
+.about-modal {
+    border: none;
+    border-radius: 12px;
+    padding: 0;
+    background: #222;
+    color: white;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    max-width: 320px;
+    text-align: center;
+}
+
+/* Backdrop (the area outside the dialog) */
+.about-modal::backdrop {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(3px);
+}
+
+.modal-content {
+    padding: 30px;
+    position: relative;
+}
+
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.about-logo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 15px;
+    border-radius: 15px;
+}
+
+.about-modal h2 { margin: 0 0 10px 0; color: #fff; }
+.about-modal p { margin: 5px 0; font-size: 14px; color: #ccc; }
+.about-modal hr { border: 0; border-top: 1px solid #444; margin: 15px 0; }
+.about-modal .license { font-size: 12px; color: #888; }
+
+
+
 /* --- Optimized Print Rules --- */
 @media print {
+
+  nav, .top-nav, .sidebar-left, #librarySidebar, .editor-pane, .floating-status, button {
+        display: none !important;
+    }
 
   .page-break { border: none; margin: 0; }
 
@@ -407,13 +557,12 @@ textarea {
         display: none !important;
     }
 
-    .container {
+    .container, .viewer-pane {
         display: block !important;
-        height: auto !important;
-        width: 100% !important;
+        border: none !important;
         margin: 0 !important;
         padding: 0 !important;
-        overflow: visible !important;
+        width: 100% !important;
     }
 
     .viewer-pane {
@@ -456,3 +605,101 @@ textarea {
 }
 
 @page { size: letter; margin: 1in; }
+
+
+/* --- Desktop: Hide mobile-only buttons --- */
+/* .mobile-only { display: none !important; } */
+
+@media (max-width: 1024px) {
+    .mobile-only { display: inline-flex !important; }
+
+    /* 1. Hide the standard nav links */
+    .nav-menu {
+        display: none; /* Hidden until burger is clicked */
+        position: absolute;
+        top: 60px;
+        right: 0;
+        background: #222;
+        flex-direction: column;
+        width: 200px;
+        padding: 10px;
+        z-index: 1001;
+    }
+
+    .nav-menu.open { display: flex; }
+
+    /* 2. One-at-a-time View Logic */
+    .container {
+        position: relative;
+    }
+
+    /* By default on mobile, show only Editor */
+    .editor-pane {
+        width: 100% !important;
+        display: block;
+    }
+    .viewer-pane {
+        display: none !important; /* Force hide preview */
+    }
+
+    /* When "show-preview" class is active, swap them */
+    .container.show-preview .editor-pane {
+        display: none !important;
+    }
+    .container.show-preview .viewer-pane {
+        display: block !important;
+        width: 100% !important;
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+    }
+}
+
+
+@media (max-width: 600px) {
+    .top-nav { padding: 0 8px; }
+    .brand { font-size: 0.9rem; margin-right: 5px; }
+    .control-group {
+        margin-right: 5px;
+        gap: 2px;
+        background: transparent; /* Cleaner look on mobile */
+    }
+    .control-group span { font-size: 12px; min-width: 30px; }
+
+    /* Make the editor take full height below nav */
+    .container { height: calc(100vh - 60px); }
+
+    textarea {
+        padding: 20px !important;
+        height: 100%;
+    }
+}
+
+
+/* Style for the dropdown menu when burger is clicked */
+@media (max-width: 1024px) {
+    .nav-menu {
+        display: none;
+        position: fixed;
+        top: 60px;
+        right: 10px;
+        background: #333;
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px;
+        border-radius: 8px;
+        z-index: 2000;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    .nav-menu.active {
+        display: flex !important;
+    }
+
+    /* Make menu buttons full width inside the burger dropdown */
+    .nav-menu .btn {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
