@@ -11,6 +11,10 @@ body, html {
     overflow: hidden;
 }
 
+a {
+  color: #0fa9e5;
+}
+
 /* --- Layout --- */
 .top-nav {
     height: var(--nav-height);
