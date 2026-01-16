@@ -38,6 +38,10 @@ const fountainInstance = new fountain();
 let currentFontSize = 18;
 let currentScriptTitle = null;
 
+// For Syn-Scrolling
+let isSyncingEditor = false;
+let isSyncingPreview = false;
+
 // --- 1. Library & Sidebar Logic ---
 
 toggleLibraryBtn.addEventListener('click', () => {
@@ -277,6 +281,71 @@ aboutDialog.addEventListener('click', (event) => {
     }
 });
 /******************************/
+
+// Scroll Editor -> Preview
+const viewerPane = document.querySelector('.viewer-pane');
+
+// Scroll Editor -> Preview
+editor.addEventListener('scroll', () => {
+    if (!isSyncingPreview && container.classList.contains('show-preview')) {
+        isSyncingEditor = true;
+
+        const editorScrollTop = editor.scrollTop;
+        const editorMaxScroll = editor.scrollHeight - editor.clientHeight;
+        const viewerMaxScroll = viewerPane.scrollHeight - viewerPane.clientHeight;
+
+        // The Editor text for the title page is small (~5% of total text)
+        const editorTitleThreshold = 0.03;
+        const editorPercent = editorScrollTop / editorMaxScroll;
+
+        let targetScroll;
+
+        if (editorPercent < editorTitleThreshold) {
+            // Because the editor is "slow", we map a tiny editor movement
+            // to a large preview movement (0% - 25%)
+            const zonePercent = editorPercent / editorTitleThreshold;
+            targetScroll = (zonePercent * 0.25) * viewerMaxScroll;
+        } else {
+            // Normal sync for the rest of the script
+            const zonePercent = (editorPercent - editorTitleThreshold) / (1 - editorTitleThreshold);
+            targetScroll = (0.25 + zonePercent * 0.75) * viewerMaxScroll;
+        }
+
+        viewerPane.scrollTop = targetScroll;
+        setTimeout(() => { isSyncingEditor = false; }, 50);
+    }
+});
+
+// Scroll Preview -> Editor
+viewerPane.addEventListener('scroll', () => {
+    if (!isSyncingEditor && container.classList.contains('show-preview')) {
+        isSyncingPreview = true;
+
+        const viewerScrollTop = viewerPane.scrollTop;
+        const viewerMaxScroll = viewerPane.scrollHeight - viewerPane.clientHeight;
+        const editorMaxScroll = editor.scrollHeight - editor.clientHeight;
+
+        // The Title Page is the first 25% of the Viewer (Page 1)
+        const previewTitleThreshold = 0.25;
+        const previewPercent = viewerScrollTop / viewerMaxScroll;
+
+        let targetScroll;
+
+        if (previewPercent < previewTitleThreshold) {
+            // SLOW DOWN THE EDITOR:
+            // Map the large 25% preview area to only 5% of the editor text
+            const zonePercent = previewPercent / previewTitleThreshold;
+            targetScroll = (zonePercent * 0.03) * editorMaxScroll;
+        } else {
+            // SYNCED: After the first page, scroll at normal 1:1 ratio
+            const zonePercent = (previewPercent - previewTitleThreshold) / (1 - previewTitleThreshold);
+            targetScroll = (0.05 + zonePercent * 0.95) * editorMaxScroll;
+        }
+
+        editor.scrollTop = targetScroll;
+        setTimeout(() => { isSyncingPreview = false; }, 50);
+    }
+});
 
 // --- 6. Initialization ---
 
