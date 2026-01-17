@@ -236,7 +236,37 @@ textarea {
     justify-content: space-between;
     align-items: center;
 }
+/* The buttons for import export in sidebar */
+.sidebar-btn {
+    width: 90%;
+    margin: 5px 5%; /* Smaller top margin to stack them closer */
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+    font-size: 14px;
+}
 
+.sidebar-left {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding-bottom: 20px;
+}
+
+.sidebar-btn {
+    background-color: #444; /* Darker grey so New Script stands out */
+}
+
+.sidebar-btn:hover {
+    background-color: #555;
+}
 #scriptList {
     flex: 1;
     overflow-y: auto;
@@ -282,21 +312,13 @@ textarea {
     font-size: 12pt;
     line-height: 1.2;
     color: #000;
-
-
     font-size: clamp(12px, 2.2vw, 18px);
-
     line-height: 1.4;
-    width: 100%;
     box-sizing: border-box;
     padding: 5vw;
 }
 
-
-
-/* Screenplay Element Formatting */
-
-/* Transitions like FADE TO: */
+/* Screenplay Elements Formatting */
 #output h2 {
     text-align: right;
     text-transform: uppercase;
@@ -678,6 +700,14 @@ textarea {
     textarea {
         padding: 20px !important;
         height: 100%;
+    }
+
+    .sidebar-actions button {
+        padding: 10px;
+        font-size: 0; /* Hides text, only shows the Emoji icon */
+    }
+    .sidebar-actions button::before {
+        font-size: 20px; /* Makes the emoji visible */
     }
 }
 

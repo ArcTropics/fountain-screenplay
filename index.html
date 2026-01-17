@@ -70,14 +70,32 @@
         </div>
     </nav>
 
+<!-- LEFT NAV -->
     <div id="librarySidebar" class="sidebar-left">
         <div class="sidebar-header">
             <h3>My Scripts</h3>
             <button id="closeLibraryBtn" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
         </div>
+
         <div id="scriptList"></div>
-        <button class="btn-primary" id="createNewBtn" style="width: 90%; margin: 10px 5%; color:white; border:none; padding:10px; border-radius:4px; cursor:pointer;">+ New Script</button>
+
+        <button class="btn-primary sidebar-btn" id="createNewBtn" style="background:#676799">
+            <span class="material-symbols-outlined">add</span> New Script
+        </button>
+
+        <button class="btn-primary sidebar-btn" onclick="exportAllScripts()">
+            <span class="material-symbols-outlined">download</span> Export All
+        </button>
+
+        <input type="file" id="importScriptsInput" style="display:none" accept=".json" onchange="importAllScripts(event)">
+
+        <button class="btn-primary sidebar-btn" onclick="document.getElementById('importScriptsInput').click()">
+            <span class="material-symbols-outlined">upload</span> Import Backup
+        </button>
     </div>
+
+
+<!-- TEXTAREA SECTION -->
 
     <div class="container">
         <div class="editor-pane">

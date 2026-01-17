@@ -282,6 +282,60 @@ aboutDialog.addEventListener('click', (event) => {
 });
 /******************************/
 
+/********   Sidebar Save collection *********/
+// --- EXPORT ALL SCRIPTS ---
+function exportAllScripts() {
+    // 1. Get all data from localStorage
+    const allData = JSON.stringify(localStorage, null, 4);
+
+    // 2. Create a "Blob" (a virtual file)
+    const blob = new Blob([allData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    // 3. Create a temporary download link and click it
+    const date = new Date().toISOString().split('T')[0];
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `fountain_backup_${date}.json`;
+    document.body.appendChild(link);
+    link.click();
+
+    // 4. Cleanup
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+// --- IMPORT ALL SCRIPTS ---
+function importAllScripts(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importedData = JSON.parse(e.target.result);
+
+            // Confirm with user before overwriting
+            if (confirm("This will overwrite your current scripts with the backup. Continue?")) {
+                // Clear existing and set new
+                localStorage.clear();
+                for (let key in importedData) {
+                    localStorage.setItem(key, importedData[key]);
+                }
+                alert("Restored successfully! The page will now reload.");
+                window.location.reload(); // Refresh to show new scripts
+            }
+        } catch (err) {
+            alert("Error: This doesn't look like a valid backup file.");
+            console.error(err);
+        }
+    };
+    reader.readAsText(file);
+}
+
+/**************************************/
+  
+
 // Scroll Editor -> Preview
 const viewerPane = document.querySelector('.viewer-pane');
 
