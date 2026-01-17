@@ -361,9 +361,10 @@ textarea {
     width: 30%;
     margin: 0 auto;
     font-style: normal;
-}
+  }
+/* THESE LINES CAUSES DOUBLE PARENTHESIS
 #output .parenthetical::before { content: "("; }
-#output .parenthetical::after { content: ")"; }
+#output .parenthetical::after { content: ")"; } */
 
 /* Dialogue - The central column */
 #output .dialogue {

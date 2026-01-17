@@ -14,7 +14,8 @@
       scene_number: /(?: *)(#.+)$/,
       transition: /^((?:[A-Z ]+ TO:)|(?:>.*))$/m,
       dialogue: /^([A-Z\s\d\(\)\.\-]+)(\^?) *$/m,
-      parenthetical: /^(\(.+\))$/gm,
+      // parenthetical: /^(\(.+\))$/gm,
+      parenthetical: /^(\(.*\))$/gm,
       action: /^(.+)/gm,
       centered: /^(?: *> *)(.+)(?: *< *)$/gm,
       italic: /(_|(?:\*+))(?=.+?\1)/g,
@@ -23,6 +24,7 @@
       boneyard: /\/\*([\s\S]*?)\*\//gm,
       page_break: /^={3,}\s*$/gm,
       line_break: /^ {2}$/gm
+
     };
 
     var parse = function (script) {
@@ -235,8 +237,9 @@
             html.push(`<p class="dialogue">${token.text}</p>`);
             break;
           case 'parenthetical':
-            html.push(`<p class="parenthetical">${token.text}</p>`);
-            break;
+              html.push(`<p class="parenthetical">${token.text}</p>`);
+              break;
+
           case 'transition':
             html.push(`<h2>${token.text}</h2>`);
             break;
