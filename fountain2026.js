@@ -177,10 +177,6 @@
         if (line.trim().length > 0) {
           tokens.push({ type: 'action', text: line.trim() });
         }
-
-
-
-
       });
 
       // --- Parser Phase 3: HTML Generation ---
@@ -225,8 +221,11 @@
       tokens.forEach(function(token) {
         switch (token.type) {
           case 'scene_heading':
-            html.push(`<h3>${token.text}...</h3>`);
-            outlineData.push({ title: token.text, line: token.line }); // Capture the scene and its line number
+            // Use trim() to remove any accidental trailing spaces
+            let cleanText = token.text.trim();
+            // Remove the three dots from the template literal below
+            html.push(`<h3>${cleanText}${token.scene_number ? '<span class="scene-number">'+token.scene_number+'</span>' : ''}</h3>`);
+            outlineData.push({ title: cleanText, line: token.line });
             break;
           case 'section':
             html.push(`<div class="section-heading" data-depth="${token.depth}">${token.text}</div>`);

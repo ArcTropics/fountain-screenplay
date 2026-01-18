@@ -1,7 +1,7 @@
 :root {
     --nav-height: 60px;
     --sidebar-width: 40%; /* Desktop split ratio */
-    --bg-color: #e0e0e0;
+    --bg-color: #999;
 }
 
 body, html {
@@ -317,6 +317,7 @@ textarea {
     line-height: 1.4;
     box-sizing: border-box;
     padding: 5vw;
+    padding-bottom: 90vh !important;
 }
 
 /* Screenplay Elements Formatting */
@@ -617,9 +618,12 @@ textarea {
     #librarySidebar,
     .actions,
     #currentActiveTitle,
+    #outlineSidebar,
+    .sidebar-right,
     .btn {
         display: none !important;
     }
+
 
     .container, .viewer-pane {
         display: block !important;
@@ -627,9 +631,6 @@ textarea {
         margin: 0 !important;
         padding: 0 !important;
         width: 100% !important;
-    }
-
-    .viewer-pane {
         display: block !important;
         width: 100% !important;
         height: auto !important;
@@ -670,7 +671,7 @@ textarea {
     }
 }
 
-@page { size: letter; margin: 1in; }
+@page {size: letter; margin: 1in 1in 1in 1.5in; /* Standard Screenplay margins */ }
 
 
 /* --- Desktop: Hide mobile-only buttons --- */
