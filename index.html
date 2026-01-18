@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fountaineer 2026</title>
+    <title>OpenDraft | Screenwriting</title>
 
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
@@ -27,7 +27,10 @@
             <button class="btn-icon" id="toggleLibraryBtn" title="Project Library" style="margin-right: 10px;">
                 <span class="material-symbols-outlined">library_books</span>
             </button>
-            <div class="brand">Fountaineer</div>
+            <div class="brand">
+                <img src="./icon-512.png" alt="OpenDraft Logo" height="32px">
+                <span class="logo-text">Open<b>Draft</b></span>
+            </div>
         </div>
 
         <div class="actions">
@@ -201,18 +204,34 @@ You can also show or hide notes for preview and print by pressing "Ctrl + m"
     <div class="modal-content">
         <button id="closeAboutBtn" class="close-modal">&times;</button>
 
-        <img src="./icon-512.png" alt="Fountaineer Logo" class="about-logo">
-        <h2>Fountaineer</h2>
-        <p>Created by <strong>Vinimay Kaul</strong></p>
-        <p>Arctropics OU, Tallinn, Estonia</p>
+        <img src="./icon-512.png" alt="OpenDraft Logo" class="about-logo">
+        <h2 class="about-title"><span class="logo-text">Open<b>Draft</b></span></h2>
+        <span class="version-badge">v2026.1.0</span>
+
+        <div class="about-info">
+            <p>Created by <strong>Vinimay Kaul</strong></p>
+            <p class="location">Arctropics OU, Tallinn, Estonia</p>
+        </div>
+
         <hr>
-        <p><a href="https://fountain.io/syntax/" target="_blank">Learn fountain syntax</a><p>
-        <p><a href="https://files.commons.gc.cuny.edu/wp-content/blogs.dir/4120/files/2018/08/Three-Act-Structure.Jim-Soto-glosses-SYD_FIELD.pdf" target="
-          ">Learn The Syd Field Paradigm</a></p>
+
+        <div class="about-links">
+            <p><a href="https://fountain.io/syntax/" target="_blank">
+                <span class="material-symbols-outlined">menu_book</span> Fountain Syntax Guide
+            </a></p>
+            <p><a href="https://files.commons.gc.cuny.edu/wp-content/blogs.dir/4120/files/2018/08/Three-Act-Structure.Jim-Soto-glosses-SYD_FIELD.pdf" target="_blank">
+                <span class="material-symbols-outlined">School</span> The Syd Field Paradigm
+            </a></p>
+        </div>
+
         <hr>
-        <p class="license">100% Free & Open Source<br>MIT License</p>
-      </div>
-  </dialog>
+
+        <p class="license">
+            <strong>100% Free & Open Source</strong><br>
+            Licensed under MIT
+        </p>
+    </div>
+</dialog>
 
   <script src="script.js"></script>
   </body>

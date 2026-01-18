@@ -27,6 +27,41 @@ a {
     box-sizing: border-box;
 }
 
+/****  BRANDING ***/
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: -0.5px;
+    cursor: default;
+    user-select: none;
+}
+
+.logo-symbol {
+    background: #0fa9e5; /* Your accent color */
+    color: white;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-weight: 900;
+    font-size: 1.2rem;
+}
+
+.logo-text {
+    font-size: 1.25rem;
+    font-weight: 300; /* Light for 'Open' */
+    color: #eee;
+}
+
+.logo-text b {
+    font-weight: 700; /* Bold for 'Draft' */
+    color: #fff;
+}
+
 /* --- Desktop Default (Side-by-Side) --- */
 .container {
     display: flex;
@@ -484,7 +519,7 @@ textarea {
     color: #fff;
     padding: 6px 14px;
     border-radius: 20px;
-    font-size: 11px;
+    font-size: 14px;
     font-style: italic;
     z-index: 999;
     backdrop-filter: blur(5px);
@@ -547,25 +582,26 @@ textarea {
 
 
 /* --- About Modal Styles --- */
+/* About Modal Styling */
 .about-modal {
     border: none;
     border-radius: 12px;
-    padding: 0;
-    background: #222;
+    background: #1e1e1e;
     color: white;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-    max-width: 320px;
-    text-align: center;
+    padding: 0;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    max-width: 350px;
+    width: 90%;
 }
 
-/* Backdrop (the area outside the dialog) */
 .about-modal::backdrop {
     background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(3px);
+    backdrop-filter: blur(4px);
 }
 
 .modal-content {
-    padding: 30px;
+    padding: 40px 20px 30px;
+    text-align: center;
     position: relative;
 }
 
@@ -587,10 +623,71 @@ textarea {
     border-radius: 15px;
 }
 
-.about-modal h2 { margin: 0 0 10px 0; color: #fff; }
-.about-modal p { margin: 5px 0; font-size: 14px; color: #ccc; }
-.about-modal hr { border: 0; border-top: 1px solid #444; margin: 15px 0; }
-.about-modal .license { font-size: 12px; color: #888; }
+.about-title .logo-text {
+    font-size: 2rem;
+    font-weight: 300;
+    letter-spacing: -1px;
+}
+
+.about-title .logo-text b {
+    font-weight: 700;
+}
+
+.version-badge {
+    display: inline-block;
+    background: #333;
+    color: #0fa9e5;
+    font-size: 0.7rem;
+    padding: 2px 10px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    font-family: monospace;
+}
+
+.about-info p {
+    margin: 5px 0;
+    font-size: 0.95rem;
+}
+
+.location {
+    color: #888;
+    font-size: 0.8rem !important;
+}
+
+.about-links {
+    text-align: left;
+    display: inline-block;
+    margin: 10px 0;
+}
+
+.about-links p {
+    margin: 12px 0;
+}
+
+.about-links a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: #0fa9e5;
+    font-size: 0.9rem;
+}
+
+.about-links a:hover {
+    text-decoration: underline;
+}
+
+.license {
+    font-size: 0.8rem;
+    color: #666;
+    line-height: 1.4;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid #333;
+    margin: 20px 0;
+}
 
 
 
@@ -671,7 +768,7 @@ textarea {
     }
 }
 
-@page {size: letter; margin: 1in 1in 1in 1.5in; /* Standard Screenplay margins */ }
+@page {size: letter; margin: 1in 1in 1in 1.5in;} /* Standard Screenplay margins */ 
 
 
 /* --- Desktop: Hide mobile-only buttons --- */

@@ -261,15 +261,24 @@ function toggleOutline() {
 
 closeOutlineBtn.addEventListener('click', toggleOutline);
 
+// --- Updated Auto-Save & Render Logic ---
 editor.addEventListener('input', () => {
-    const script = editor.value;
-    const result = fountain().parse(script); // This now contains .outline
+    const scriptContent = editor.value;
 
-    // Update the Preview
+    // 1. Render the Preview & Outline
+    const result = fountainInstance.parse(scriptContent);
     document.getElementById('output').innerHTML = result.html;
-
-    // Update the Outline Sidebar
     renderOutline(result.outline);
+
+    // 2. AUTO-SAVE TO LIBRARY
+    if (currentScriptTitle) {
+        // Get the whole library
+        const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
+        // Update the specific active script
+        library[currentScriptTitle] = scriptContent;
+        // Save it back to storage
+        localStorage.setItem('fountain_library', JSON.stringify(library));
+    }
 });
 
 function renderOutline(outline) {
