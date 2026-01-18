@@ -32,6 +32,10 @@ const aboutBtn = document.getElementById('aboutBtn');
 const aboutDialog = document.getElementById('aboutDialog');
 const closeAboutBtn = document.getElementById('closeAboutBtn');
 
+// Outline right bar
+const outlineSidebar = document.getElementById('outlineSidebar');
+const closeOutlineBtn = document.getElementById('closeOutlineBtn');
+
 // Initialize Fountain
 const fountainInstance = new fountain();
 
@@ -98,7 +102,7 @@ createNewBtn.addEventListener('click', () => {
     }
 });
 
-// --- 2. Mobile & Responsive Logic ---
+// --- Mobile & Responsive Logic ---
 
 if (burgerBtn) {
     burgerBtn.addEventListener('click', () => navMenu.classList.toggle('active'));
@@ -108,7 +112,7 @@ if (mobileToggle) {
     mobileToggle.addEventListener('click', togglePreview);
 }
 
-// --- 3. Restored Font & File Operations ---
+// ---  Restored Font & File Operations ---
 
 function updateFontSize(delta) {
     currentFontSize = Math.min(Math.max(currentFontSize + delta, 10), 40);
@@ -168,7 +172,7 @@ async function saveFile() {
     } catch (err) { console.error("Save cancelled", err); }
 }
 
-// --- 4. Restored Keyboard Shortcuts ---
+// ---  Keyboard Shortcuts ---
 
 window.addEventListener('keydown', (event) => {
     const isControl = event.ctrlKey || event.metaKey;
@@ -182,20 +186,26 @@ window.addEventListener('keydown', (event) => {
             case 'p': event.preventDefault(); window.print(); break;
             case 'm': event.preventDefault(); toggleNotes(); break;
             case ';': event.preventDefault(); togglePreview(); break;
+            case '\\': event.preventDefault(); toggleOutline(); break;
         }
     }
 });
 
-// --- 5. Rendering & Notes ---
+// --- Rendering & Notes ---
 
 function render() {
     titleDisplay.innerText = currentScriptTitle ? `Editing: ${currentScriptTitle}` : "No script active";
     const rawText = editor.value;
     if (!rawText.trim()) {
         output.innerHTML = `<div style="text-align:center;color:#888;margin-top:100px;"><p>Script is empty.</p></div>`;
+        renderOutline([]); // Clear outline if empty
         return;
     }
     const parsedData = fountainInstance.parse(rawText);
+
+    // NEW: Update the outline every time we render
+    renderOutline(parsedData.outline);
+
     let htmlOutput = parsedData.html;
     const customNoteRegex = /\{\{([\s\S]*?)\}\}/g;
     htmlOutput = htmlOutput.replace(customNoteRegex, (m, t) => `<div class="note">${t.trim()}</div>`);
@@ -244,14 +254,60 @@ function toggleNotes() {
     }
 }
 
+// Toggle outline Sidebar
+function toggleOutline() {
+    outlineSidebar.classList.toggle('active');
+}
+
+closeOutlineBtn.addEventListener('click', toggleOutline);
+
 editor.addEventListener('input', () => {
-    if (currentScriptTitle) {
-        const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
-        library[currentScriptTitle] = editor.value;
-        localStorage.setItem('fountain_library', JSON.stringify(library));
-    }
-    render();
+    const script = editor.value;
+    const result = fountain().parse(script); // This now contains .outline
+
+    // Update the Preview
+    document.getElementById('output').innerHTML = result.html;
+
+    // Update the Outline Sidebar
+    renderOutline(result.outline);
 });
+
+function renderOutline(outline) {
+    const list = document.getElementById('outlineList');
+    list.innerHTML = ''; // Clear previous
+
+    outline.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'outline-item';
+        div.innerHTML = `<span class="material-symbols-outlined" style="font-size:14px">movie</span> ${item.title}`;
+
+        // Jump to line on click
+        div.onclick = () => {
+            // 1. Move the cursor as before
+            const lines = editor.value.split('\n');
+            let charPos = 0;
+            for(let i = 0; i < item.line; i++) {
+                charPos += lines[i].length + 1;
+            }
+            editor.focus();
+            editor.setSelectionRange(charPos, charPos);
+
+            // 2. Get the PIXEL PERFECT top position
+            const exactTop = getLineTop(item.line);
+
+            // 3. Scroll precisely to that pixel
+            editor.scrollTo({
+                top: exactTop,
+                behavior: 'smooth'
+            });
+
+            if (window.innerWidth < 1024) toggleOutline();
+        };
+
+        list.appendChild(div);
+    });
+}
+
 
 // Open About Dialog
 aboutBtn.addEventListener('click', () => {
@@ -281,6 +337,82 @@ aboutDialog.addEventListener('click', (event) => {
     }
 });
 /******************************/
+
+/************* Sidebar Right . Outline **********/
+function jumpToScene(lineNumber) {
+    const editor = document.getElementById('editor');
+    const lines = editor.value.split('\n');
+
+    // Calculate character position up to that line
+    let charIndex = 0;
+    for (let i = 0; i < lineNumber; i++) {
+        charIndex += lines[i].length + 1; // +1 for the newline character
+    }
+
+    // 1. Move the cursor
+    editor.focus();
+    editor.setSelectionRange(charIndex, charIndex);
+
+    // 2. Scroll the editor to that position
+    // We calculate line height to scroll accurately
+    const lineHeight = 24; // Match your CSS line-height
+    editor.scrollTop = lineNumber * lineHeight - (editor.clientHeight / 4);
+
+    // 3. Close the library sidebar if on mobile
+    if (window.innerWidth < 1024) {
+        document.getElementById('librarySidebar').classList.remove('active');
+    }
+}
+
+function updateOutlineUI(outlineData) {
+    const container = document.getElementById('outlineList');
+    container.innerHTML = ''; // Clear previous
+
+    outlineData.forEach(scene => {
+        const item = document.createElement('div');
+        item.className = 'outline-item';
+        item.innerText = scene.title;
+        item.onclick = () => jumpToScene(scene.line);
+        container.appendChild(item);
+    });
+}
+document.getElementById('outlineBtn').addEventListener('click', toggleOutline);
+
+// Helper for pixel calculations
+function getLineTop(lineNumber) {
+    const style = window.getComputedStyle(editor);
+    const ghost = document.createElement('div');
+
+    // Copy every visual style so the wrapping is identical
+    const properties = [
+        'direction', 'boxSizing', 'width', 'fontSize', 'fontFamily',
+        'fontStyle', 'fontWeight', 'lineHeight', 'paddingTop',
+        'paddingBottom', 'paddingLeft', 'paddingRight', 'borderWidth',
+        'wordWrap', 'whiteSpace'
+    ];
+    properties.forEach(prop => ghost.style[prop] = style[prop]);
+
+    ghost.style.position = 'absolute';
+    ghost.style.visibility = 'hidden';
+    ghost.style.height = 'auto';
+    ghost.style.top = '0';
+
+    // Fill ghost with text up to that line
+    const lines = editor.value.split('\n');
+    ghost.textContent = lines.slice(0, lineNumber).join('\n') + '\n';
+
+    // Add a marker at the very end
+    const marker = document.createElement('span');
+    marker.textContent = 'X';
+    ghost.appendChild(marker);
+
+    document.body.appendChild(ghost);
+    const top = marker.offsetTop;
+    document.body.removeChild(ghost);
+
+    return top;
+}
+
 
 /********   Sidebar Save collection *********/
 // --- EXPORT ALL SCRIPTS ---
@@ -334,7 +466,7 @@ function importAllScripts(event) {
 }
 
 /**************************************/
-  
+
 
 // Scroll Editor -> Preview
 const viewerPane = document.querySelector('.viewer-pane');
@@ -403,17 +535,30 @@ viewerPane.addEventListener('scroll', () => {
 
 // --- 6. Initialization ---
 
+function refreshApp() {
+    const script = editor.value;
+    const result = fountain().parse(script);
+
+    // Update Preview
+    document.getElementById('output').innerHTML = result.html;
+
+    // Update Outline
+    renderOutline(result.outline);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
-    // 1. Add this line to make Preview active by default
     container.classList.add('show-preview');
 
     const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
     const lastActive = localStorage.getItem('last_active_script');
 
     if (Object.keys(library).length > 0) {
+        // This function sets editor.value
         loadFromLibrary(lastActive && library[lastActive] ? lastActive : Object.keys(library)[0]);
-    } else {
+        // CRITICAL: Call render() here to process the loaded text into the Outline
         render();
+    } else {
+        render(); // Renders empty state or default text
     }
 
     // Ensure the mobile toggle button icon reflects the starting state

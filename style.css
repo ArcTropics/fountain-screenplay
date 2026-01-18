@@ -1,7 +1,7 @@
 :root {
     --nav-height: 60px;
     --sidebar-width: 40%; /* Desktop split ratio */
-    --bg-color: #f4f4f9;
+    --bg-color: #e0e0e0;
 }
 
 body, html {
@@ -55,6 +55,7 @@ a {
     padding: 60px 20%;
     line-height: 1.6;
     transition: padding 0.3s ease;
+    padding-bottom: 90vh !important;
 }
 
 .viewer-pane {
@@ -500,6 +501,42 @@ textarea {
     opacity: 0.3;
 }
 
+/* Right Outline Navigatiopn bar */
+.sidebar-right {
+    position: fixed;
+    top: 0;
+    right: -300px; /* Hidden by default */
+    width: 300px;
+    height: 100%;
+    background-color: #1e1e1e;
+    color: white;
+    transition: right 0.3s ease;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #333;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+}
+
+.sidebar-right.active {
+    right: 0; /* Slide in */
+}
+
+/* Style for the items in the outline */
+.outline-item {
+    padding: 12px 20px;
+    border-bottom: 1px solid #2a2a2a;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #bbb;
+    transition: background 0.2s;
+}
+
+.outline-item:hover {
+    background: #333;
+    color: #0fa9e5;
+}
+
 
 /* Other Elements */
 #output .centered { text-align: center; width: 100%; }
@@ -597,10 +634,11 @@ textarea {
         width: 100% !important;
         height: auto !important;
         margin: 0 !important;
-        padding: 0 !important;
+        padding: 0 !important; */
         overflow: visible !important;
         position: static !important; /* Crucial for page breaking */
     }
+
 
     /* Remove the shadow box from the script */
     #output {
@@ -614,6 +652,7 @@ textarea {
         height: auto !important;
         overflow: visible !important;
     }
+
 
     #output .note {
         box-shadow: none !important;

@@ -30,6 +30,7 @@
     var parse = function (script) {
       var source = script.replace(/\r\n|\r/g, '\n').concat('\n\n');
       var tokens = [];
+      let outlineData = [];
 
       // Handle Boneyard (/* comments */)
       source = source.replace(regex.boneyard, '');
@@ -40,6 +41,9 @@
       var metadataEndIndex = 0;
       var isContactBlock = false;
       var currentContact = [];
+      var lines = source.split('\n');
+      var is_dialogue = false;
+
 
       for (var i = 0; i < sourceLines.length; i++) {
         var line = sourceLines[i]; // not trimming here since i need to detect indentation for Contact section
@@ -99,17 +103,17 @@
       var lines = source.split('\n');
       var is_dialogue = false;
 
-      lines.forEach(function(line) {
+      lines.forEach(function(line, index) { // Added 'index' here
         // Scene Headings
         if (line.match(regex.scene_heading)) {
-          var match = line.match(regex.scene_heading);
           var text = line.replace(/^\./, '');
           var scene_number = null;
           if (text.match(regex.scene_number)) {
             scene_number = text.match(regex.scene_number)[1].replace(/#/g, '');
             text = text.replace(regex.scene_number, '');
           }
-          tokens.push({ type: 'scene_heading', text: text, scene_number: scene_number });
+          // We store the line index here!
+          tokens.push({ type: 'scene_heading', text: text.trim(), scene_number: scene_number, line: index + metadataEndIndex}); // Add the Title Page line count here
           is_dialogue = false; return;
         }
 
@@ -221,7 +225,8 @@
       tokens.forEach(function(token) {
         switch (token.type) {
           case 'scene_heading':
-            html.push(`<h3>${token.text}${token.scene_number ? '<span class="scene-number">'+token.scene_number+'</span>' : ''}</h3>`);
+            html.push(`<h3>${token.text}...</h3>`);
+            outlineData.push({ title: token.text, line: token.line }); // Capture the scene and its line number
             break;
           case 'section':
             html.push(`<div class="section-heading" data-depth="${token.depth}">${token.text}</div>`);
@@ -260,7 +265,12 @@
         }
       });
 
-      return { title: title_page.find(t => t.type === 'title')?.text || "Untitled", html: html.join('') };
+      return {
+        title: title_page.find(t => t.type === 'title')?.text || "Untitled",
+        html: html.join(''),
+        outline: outlineData
+      };
+
     };
 
     return { parse: parse };

@@ -32,29 +32,32 @@
 
         <div class="actions">
             <div class="control-group">
-                <button class="btn-icon" id="decreaseFont" title="Decrease Font"><span class="material-symbols-outlined">remove</span></button>
+                <button class="btn-icon" id="decreaseFont" title="Decrease Font (Ctrl+[)"><span class="material-symbols-outlined">remove</span></button>
                 <span id="fontSizeDisplay">18px</span>
-                <button class="btn-icon" id="increaseFont" title="Increase Font"><span class="material-symbols-outlined">add</span></button>
+                <button class="btn-icon" id="increaseFont" title="Increase Font (Ctrl+])"><span class="material-symbols-outlined">add</span></button>
             </div>
 
-            <button id="mobile-toggle" class="btn btn-primary mobile-only">
+            <button id="mobile-toggle" class="btn btn-primary mobile-only" title="Toggle Preview (Ctrl+;)">
                 <span class="material-symbols-outlined">visibility</span>
             </button>
 
             <div class="nav-menu" id="navMenu">
-                <button class="btn" id="openBtn">
+                <button class="btn" id="openBtn" title="Open from File (Ctrl+O)">
                     <span class="material-symbols-outlined">file_open</span>
                     <span>Open</span>
                 </button>
-                <button class="btn" id="saveBtn">
+                <button class="btn" id="saveBtn" title="Save to File (Ctrl+S)">
                     <span class="material-symbols-outlined">save</span>
                     <span>Save</span>
                 </button>
-                <button class="btn" id="toggleNotesBtn">
+                <button class="btn" id="outlineBtn" title="Toggle Outline (Ctrl+\)">
+                    <span class="material-symbols-outlined">format_list_bulleted</span><span>Outliner</span>
+                </button>
+                <button class="btn" id="toggleNotesBtn" title="Toggele Notes (Ctrl+M)">
                     <span class="material-symbols-outlined">description</span>
                     <span>Notes</span>
                 </button>
-                <button class="btn" onclick="window.print()">
+                <button class="btn" onclick="window.print()" title="Print (Ctrl+P)">
                     <span class="material-symbols-outlined">print</span>
                     <span>PDF</span>
                 </button>
@@ -69,7 +72,15 @@
             </button>
         </div>
     </nav>
-
+<!-- RIGHT NAV -->
+<div id="outlineSidebar" class="sidebar-right">
+    <div class="sidebar-header">
+        <h3>Outline</h3>
+        <button id="closeOutlineBtn" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+    </div>
+    <div id="outlineList">
+        </div>
+</div>
 <!-- LEFT NAV -->
     <div id="librarySidebar" class="sidebar-left">
         <div class="sidebar-header">
