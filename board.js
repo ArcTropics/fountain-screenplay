@@ -54,11 +54,13 @@ const BoardApp = {
             container.appendChild(card);
         });
 
+        // Re-initialize Sortable with a specific handle
         if (typeof Sortable !== 'undefined') {
             new Sortable(container, {
-                animation: 200, // Slightly slower, smoother animation
+                animation: 200,
                 ghostClass: 'sortable-ghost',
-                handle: 'h4' // Optional: drag by the heading only to avoid conflict with text selection
+                handle: 'h4', // CRITICAL: This makes the top bar the only drag spot
+                forceFallback: true // Improves behavior on touch/mobile
             });
         }
     },
