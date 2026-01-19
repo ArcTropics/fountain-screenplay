@@ -15,6 +15,34 @@ a {
   color: #0fa9e5;
 }
 
+/* When board is active, hide the standard UI */
+body.board-active .top-nav,
+body.board-active .container,
+body.board-active .sidebar-left,
+body.board-active .sidebar-right,
+body.board-active .floating-status {
+    display: none !important;
+}
+
+/* The Board Container - Full Screen */
+#board-pane {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #121212; /* Dark corkboard feel */
+    z-index: 9999;
+    overflow-y: auto;
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+body.board-active #board-pane {
+    display: block;
+}
+
 /* --- Layout --- */
 .top-nav {
     height: var(--nav-height);
@@ -768,7 +796,7 @@ hr {
     }
 }
 
-@page {size: letter; margin: 1in 1in 1in 1.5in;} /* Standard Screenplay margins */ 
+@page {size: letter; margin: 1in 1in 1in 1.5in;} /* Standard Screenplay margins */
 
 
 /* --- Desktop: Hide mobile-only buttons --- */

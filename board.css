@@ -1,0 +1,122 @@
+/* Full-screen Board Overlay */
+#board-pane {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #1a1a1a;
+    z-index: 9999;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.board-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #333;
+    margin-bottom: 20px;
+}
+
+.board-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.board-title-group h2 {
+    margin: 0;
+    color: white;
+    font-weight: 300;
+}
+
+/* The Grid for Cards */
+#card-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Wider cards */
+    gap: 25px;
+    padding: 30px;
+}
+
+/* Individual Scene Card */
+.scene-card {
+    background: #252525;
+    border: 2px solid #3d3d3d;
+    border-radius: 12px;
+    padding: 20px;
+    height: 300px; /* Taller cards */
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.scene-card:active { cursor: grabbing; }
+
+.scene-card h4 {
+    background: #333; /* Darker header to indicate a handle */
+    color: #0fa9e5;
+    font-size: 0.8rem;
+    margin: -20px -20px 15px -20px; /* Pull header to the edges of the card */
+    padding: 12px 20px;
+    border-radius: 10px 10px 0 0; /* Match card corners */
+    cursor: grab; /* Visual cue for dragging */
+    user-select: none; /* Prevent text selection while dragging */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.2s;
+}
+.scene-card h4:hover {
+    background: #3d3d3d; /* Highlight on hover */
+}
+.scene-card h4:active {
+    cursor: grabbing;
+}
+.scene-card h4::after {
+    content: '⠿'; /* The universal drag symbol */
+    font-size: 1.2rem;
+    opacity: 0.5;
+}
+
+.scene-card textarea {
+    flex-grow: 1; /* Makes textarea fill the card */
+    background: #1a1a1a !important;
+    color: #e0e0e0 !important;
+    border: 1px solid #333 !important;
+    border-radius: 6px;
+    padding: 12px !important;
+    font-family: 'Courier Prime', 'Courier', monospace; /* Script font */
+    font-size: 14px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+}
+
+.scene-card textarea:focus {
+    border-color: #0fa9e5 !important;
+    background: #1f1f1f !important;
+}
+
+.sortable-ghost {
+    opacity: 0.4;
+    border: 2px dashed #0fa9e5;
+}
+
+.scene-card .card-meta {
+    font-size: 10px;
+    color: #666;
+    text-align: right;
+    margin-top: auto;
+}
+
+.scene-synopsis {
+    border: 1px solid #444 !important;
+    background: #222 !important;
+    padding: 8px !important;
+    border-radius: 4px;
+    color: #aaa !important;
+}

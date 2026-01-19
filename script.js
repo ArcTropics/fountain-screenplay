@@ -573,6 +573,10 @@ viewerPane.addEventListener('scroll', () => {
     }
 });
 
+// board
+document.getElementById('boardToggleBtn').addEventListener('click', () => {
+    BoardApp.launch(editor.value);
+});
 // --- 6. Initialization ---
 
 function refreshApp() {
