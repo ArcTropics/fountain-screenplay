@@ -129,81 +129,76 @@
       var lines = source.split('\n');
       var is_dialogue = false;
 
-      lines.forEach(function(line, index) { // Added 'index' here
+      lines.forEach(function(line, index) {
+        const absoluteLine = index + metadataEndIndex;
+        const trimmed = line.trim();
+
         // Scene Headings
         if (line.match(regex.scene_heading)) {
-          var text = line.replace(/^\./, '');
-          var scene_number = null;
-          if (text.match(regex.scene_number)) {
-            scene_number = text.match(regex.scene_number)[1].replace(/#/g, '');
-            text = text.replace(regex.scene_number, '');
-          }
-          // We store the line index here!
-          tokens.push({ type: 'scene_heading', text: text.trim(), scene_number: scene_number, line: index + metadataEndIndex}); // Add the Title Page line count here
-          is_dialogue = false; return;
+            var text = line.replace(/^\./, '');
+            var scene_number = null;
+            if (text.match(regex.scene_number)) {
+                scene_number = text.match(regex.scene_number)[1].replace(/#/g, '');
+                text = text.replace(regex.scene_number, '');
+            }
+            tokens.push({ type: 'scene_heading', text: text.trim(), scene_number: scene_number, line: absoluteLine });
+            is_dialogue = false; return;
         }
 
         // Sections
         if (line.match(regex.section)) {
-          var match = line.match(regex.section);
-          tokens.push({ type: 'section', text: match[0].replace(/#/g, '').trim(), depth: (match[0].match(/#/g) || []).length });
-          return;
+            tokens.push({ type: 'section', text: line.replace(/#/g, '').trim(), depth: (line.match(/#/g) || []).length, line: absoluteLine });
+            return;
         }
 
         // Synopses
         if (line.match(regex.synopsis)) {
-          tokens.push({ type: 'synopsis', text: line.replace('=', '').trim() });
-          return;
-        }
-
-        // Centered
-        if (line.match(regex.centered)) {
-          tokens.push({ type: 'centered', text: line.replace(/>|</g, '').trim() });
-          return;
-        }
-
-        // Transitions
-        if (line.match(regex.transition)) {
-          tokens.push({ type: 'transition', text: line.replace('>', '').trim() });
-          return;
+            tokens.push({ type: 'synopsis', text: line.replace('=', '').trim(), line: absoluteLine });
+            return;
         }
 
         // Dialogue & Characters
         if (line.match(regex.dialogue)) {
-          var match = line.match(regex.dialogue);
-          tokens.push({ type: 'character', text: match[1].trim(), dual: !!match[2] });
-          is_dialogue = true; return;
+            var match = line.match(regex.dialogue);
+            tokens.push({ type: 'character', text: match[1].trim(), dual: !!match[2], line: absoluteLine });
+            is_dialogue = true; return;
         }
 
         if (is_dialogue) {
-          if (line.match(regex.parenthetical)) {
-            tokens.push({ type: 'parenthetical', text: line.trim() });
-            return;
-          }
-          if (line.trim().length > 0) {
-            tokens.push({ type: 'dialogue', text: line.trim() });
-            return;
-          }
-          is_dialogue = false;
+            if (line.match(regex.parenthetical)) {
+                tokens.push({ type: 'parenthetical', text: trimmed, line: absoluteLine });
+                return;
+            }
+            if (trimmed.length > 0) {
+                tokens.push({ type: 'dialogue', text: trimmed, line: absoluteLine });
+                return;
+            }
+            is_dialogue = false;
         }
 
-        // FOr page Break
-        if (line.match(regex.page_break)) {
-            tokens.push({ type: 'page_break' });
+        // Centered
+        if (line.match(regex.centered)) {
+            tokens.push({ type: 'centered', text: line.replace(/>|<|/g, '').trim(), line: absoluteLine });
             return;
         }
 
-        // Notes (Custom implementation)
+        // Transitions
+        if (line.match(regex.transition)) {
+            tokens.push({ type: 'transition', text: line.replace('>', '').trim(), line: absoluteLine });
+            return;
+        }
+
+        // Notes
         if (line.match(/\{\{(.*?)\}\}/)) {
-           tokens.push({ type: 'note', text: line.replace(/\{\{|\}\}/g, '').trim() });
-           return;
+            tokens.push({ type: 'note', text: line.replace(/\{\{|\}\}/g, '').trim(), line: absoluteLine });
+            return;
         }
 
         // Action
-        if (line.trim().length > 0) {
-          tokens.push({ type: 'action', text: line.trim() });
+        if (trimmed.length > 0) {
+            tokens.push({ type: 'action', text: trimmed, line: absoluteLine });
         }
-      });
+    });
 
       // --- Parser Phase 3: HTML Generation ---
       var html = [];
@@ -244,44 +239,46 @@
           html.push('<div class="page-break"></div>');
       }
 
-      tokens.forEach(function(token) {
+      tokens.forEach(function(token, index) {
         let text = token.text ? linkify(token.text) : "";
+        const idAttr = `data-token-index="${index}"`; // Unique identifier for each token
+
         switch (token.type) {
           case 'scene_heading':
             let cleanText = text.trim();
-            html.push(`<h3>${cleanText}${token.scene_number ? '<span class="scene-number">'+token.scene_number+'</span>' : ''}</h3>`);
+            html.push(`<h3 ${idAttr}>${cleanText}${token.scene_number ? '<span class="scene-number">'+token.scene_number+'</span>' : ''}</h3>`);
             outlineData.push({ title: token.text.trim(), line: token.line });
             break;
           case 'section':
-            html.push(`<div class="section-heading" data-depth="${token.depth}">${text}</div>`);
+            html.push(`<div ${idAttr} class="section-heading" data-depth="${token.depth}">${text}</div>`);
             break;
           case 'synopsis':
-            html.push(`<div class="synopsis">${text}</div>`);
+            html.push(`<div ${idAttr} class="synopsis">${text}</div>`);
             break;
           case 'character':
-            html.push(`<h4 class="${token.dual ? 'dual' : ''}">${text}</h4>`);
+            html.push(`<h4 ${idAttr} class="${token.dual ? 'dual' : ''}">${text}</h4>`);
             break;
           case 'dialogue':
-            html.push(`<p class="dialogue">${text}</p>`);
+            html.push(`<p ${idAttr} class="dialogue">${text}</p>`);
             break;
           case 'parenthetical':
-            html.push(`<p class="parenthetical">${text}</p>`);
+            html.push(`<p ${idAttr} class="parenthetical">${text}</p>`);
             break;
           case 'transition':
-            html.push(`<h2>${text}</h2>`);
+            html.push(`<h2 ${idAttr}>${text}</h2>`);
             break;
           case 'centered':
-            html.push(`<p class="centered">${text}</p>`);
+            html.push(`<p ${idAttr} class="centered">${text}</p>`);
             break;
           case 'note':
             // Notes are great places for research links
-            html.push(`<div class="note">[[ ${text} ]]</div>`);
+            html.push(`<div ${idAttr} class="note">[[ ${text} ]]</div>`);
             break;
           case 'action':
-            html.push(`<p>${text}</p>`);
+            html.push(`<p ${idAttr}>${text}</p>`);
             break;
           case 'page_break':
-            html.push('<div class="page-break"></div>');
+            html.push('<div ${idAttr} class="page-break"></div>');
             break;
       // ... can add other cases (scene_heading, character, etc.)
           }
@@ -289,9 +286,10 @@
 
 
       return {
-        title: title_page.find(t => t.type === 'title')?.text || "Untitled",
-        html: html.join(''),
-        outline: outlineData
+          title: title_page.find(t => t.type === 'title')?.text || "Untitled",
+          html: html.join(''),
+          outline: outlineData,
+          tokens: tokens // CRITICAL: Add this line
       };
     };
 

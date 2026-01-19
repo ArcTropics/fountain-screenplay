@@ -6,13 +6,33 @@
 
 body, html {
     margin: 0;
-    height: 100%;
     font-family: sans-serif;
     overflow: hidden;
+    height: 100vh;
+    padding: 0;
+    overflow: hidden; /* This is the "kill switch" for the moving toolbar */
 }
 
-a {
-  color: #0fa9e5;
+@media screen {
+  .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+  }
+
+  .toolbar {
+      height: 60px;
+      flex-shrink: 0; /* Prevents the long text from 'squishing' the toolbar */
+      background: #1a1a1a;
+      z-index: 1000;
+      border-bottom: 1px solid #333;
+  }
+
+  .main-workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+  }
 }
 
 /* When board is active, hide the standard UI */
@@ -23,6 +43,11 @@ body.board-active .sidebar-right,
 body.board-active .floating-status {
     display: none !important;
 }
+
+a {
+  color: #0fa9e5;
+}
+
 
 /* The Board Container - Full Screen */
 #board-pane {
@@ -453,6 +478,7 @@ textarea {
     margin-top: 2em;
     margin-bottom: 1em;
     text-align: left;
+    font-size: 1em;
 }
 
 /* Character Names */
@@ -631,6 +657,31 @@ textarea {
 #output .synopsis { color: #666; font-style: italic; margin-bottom: 10px; }
 #output .scene-number { float: right; font-weight: normal; }
 
+/* Highlightin on click  */
+/* The highlight effect */
+.sync-highlight {
+    background-color: rgba(15, 169, 229, 0.15);
+    border-radius: 4px;
+    position: relative;
+    transition: background-color 0.3s ease;
+}
+
+/* The "Arrow" pointing to the line */
+.sync-highlight::before {
+    content: '▶';
+    position: absolute;
+    left: -25px;
+    color: #0fa9e5;
+    font-size: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    animation: bounceRight 0.5s infinite alternate;
+}
+
+@keyframes bounceRight {
+    from { transform: translateY(-50%) translateX(0); }
+    to { transform: translateY(-50%) translateX(5px); }
+}
 
 /* --- About Modal Styles --- */
 /* About Modal Styling */
@@ -764,8 +815,13 @@ hr {
 /* --- Optimized Print Rules --- */
 @media print {
   /* Set up the page counter */
-    body {
+    html, body {
         counter-reset: page;
+        height: auto !important;
+        overflow: visible !important; /* Allows the page to flow across multiple sheets */
+    }
+    .toolbar, #editor, .outline-sidebar {
+        display: none !important; /* Hide UI elements so only the script prints */
     }
 
   nav, .top-nav, .sidebar-left, #librarySidebar, .editor-pane, .floating-status, button {

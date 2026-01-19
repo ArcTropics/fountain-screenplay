@@ -214,7 +214,7 @@ function render() {
     const pageStatsElement = document.getElementById('page-count-display');
     if (pageStatsElement) {
         // pageStatsElement.innerText = `Approx. ${estimatedPages} Page${estimatedPages > 1 ? 's' : ''}`;
-        pageStatsElement.innerText = `${estimatedPages} Page${estimatedPages > 1 ? 's' : ''} (~${estimatedPages} min)`;
+        pageStatsElement.innerText = `~${estimatedPages} Page${estimatedPages > 1 ? 's' : ''} (~${estimatedPages} min)`;
     }
 
     // NEW: Update Outline and Page Stats
@@ -796,6 +796,53 @@ function updateActiveItem(items) {
 }
 
 /*************************/
+
+/**********   Click and highlight ***/
+editor.addEventListener('click', () => {
+    const textUpToCursor = editor.value.substring(0, editor.selectionStart);
+    let clickedLine = textUpToCursor.split('\n').length - 1;
+
+    // Get tokens from the most recent parse
+    const result = fountainInstance.parse(editor.value);
+    const tokens = result.tokens;
+
+    // Fuzzy search: If we clicked an empty line, look upwards for the nearest token
+    let targetTokenIndex = -1;
+    let lookUpLine = clickedLine;
+
+    while (lookUpLine >= 0 && targetTokenIndex === -1) {
+        targetTokenIndex = tokens.findIndex(t => t.line === lookUpLine);
+        lookUpLine--;
+    }
+
+    if (targetTokenIndex !== -1) {
+        const element = output.querySelector(`[data-token-index="${targetTokenIndex}"]`);
+
+        if (element) {
+            // Clear old highlights
+            output.querySelectorAll('.sync-highlight').forEach(el => el.classList.remove('sync-highlight'));
+
+            // Add new highlight
+            element.classList.add('sync-highlight');
+
+            // Scroll preview to match
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+});
+
+function highlightPreviewElement(index) {
+    // Remove previous highlights
+    const oldHighlight = output.querySelector('.sync-highlight');
+    if (oldHighlight) oldHighlight.classList.remove('sync-highlight');
+
+    // Find the new element
+    const element = output.querySelector(`[data-token-index="${index}"]`);
+    if (element) {
+        element.classList.add('sync-highlight');
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
 
 
 // board
