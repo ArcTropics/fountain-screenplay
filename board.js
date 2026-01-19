@@ -57,10 +57,14 @@ const BoardApp = {
         // Re-initialize Sortable with a specific handle
         if (typeof Sortable !== 'undefined') {
             new Sortable(container, {
-                animation: 200,
+                animation: 150,
+                handle: 'h4',           // Only drag by the heading
                 ghostClass: 'sortable-ghost',
-                handle: 'h4', // CRITICAL: This makes the top bar the only drag spot
-                forceFallback: true // Improves behavior on touch/mobile
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                forceFallback: true,    // Use JS-based dragging (much smoother with transforms)
+                fallbackOnBody: true,   // Keeps the card from getting "cut off" by container edges
+                swapThreshold: 0.65     // Makes it easier to trigger a swap
             });
         }
     },
