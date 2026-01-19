@@ -57,6 +57,7 @@
       var tokens = [];
       let outlineData = [];
 
+
       // Handle Boneyard (/* comments */)
       source = source.replace(regex.boneyard, '');
 
@@ -285,6 +286,7 @@
       // ... can add other cases (scene_heading, character, etc.)
           }
       });
+
 
       return {
         title: title_page.find(t => t.type === 'title')?.text || "Untitled",

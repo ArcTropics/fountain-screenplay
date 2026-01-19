@@ -200,15 +200,30 @@ window.addEventListener('keydown', (event) => {
 function render() {
     titleDisplay.innerText = currentScriptTitle ? `Editing: ${currentScriptTitle}` : "No script active";
     const rawText = editor.value;
+
     if (!rawText.trim()) {
         output.innerHTML = `<div style="text-align:center;color:#888;margin-top:100px;"><p>Script is empty.</p></div>`;
-        renderOutline([]); // Clear outline if empty
+        renderOutline([]);
         return;
     }
     const parsedData = fountainInstance.parse(rawText);
 
-    // NEW: Update the outline every time we render
+    const lines = rawText.split('\n').length; // calculate lines
+    const estimatedPages = Math.max(1, Math.ceil(lines / 50)) + 1;
+
+    const pageStatsElement = document.getElementById('page-count-display');
+    if (pageStatsElement) {
+        // pageStatsElement.innerText = `Approx. ${estimatedPages} Page${estimatedPages > 1 ? 's' : ''}`;
+        pageStatsElement.innerText = `${estimatedPages} Page${estimatedPages > 1 ? 's' : ''} (~${estimatedPages} min)`;
+    }
+
+    // NEW: Update Outline and Page Stats
     renderOutline(parsedData.outline);
+
+    const pageStats = document.getElementById('page-stats');
+    if (pageStats) {
+        pageStats.innerText = `${estimatedPages} Page${estimatedPages > 1 ? 's' : ''} (~${estimatedPages} min)`;
+    }
 
     let htmlOutput = parsedData.html;
     const customNoteRegex = /\{\{([\s\S]*?)\}\}/g;

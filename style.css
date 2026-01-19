@@ -763,12 +763,24 @@ hr {
 
 /* --- Optimized Print Rules --- */
 @media print {
+  /* Set up the page counter */
+    body {
+        counter-reset: page;
+    }
 
   nav, .top-nav, .sidebar-left, #librarySidebar, .editor-pane, .floating-status, button {
         display: none !important;
     }
 
-  .page-break { border: none; margin: 0; }
+    page-break {
+          page-break-after: always;
+          counter-increment: page;
+      }
+
+      /* Ensure page 1 starts after the Title Page */
+      .title-page {
+          counter-reset: page 0;
+      }
 
     /* 1. Reset Global Layout to allow flow across multiple pages */
     body, html {
@@ -791,6 +803,17 @@ hr {
         display: none !important;
     }
 
+    /* Standard Screenplay Print Settings */
+    @page {
+        size: letter;
+        margin: 1in 0.5in 1in 1.5in; /* Standard Screenplay Margins (Left is wider for holes) */
+
+        @top-right {
+            content: counter(page) ".";
+            font-family: 'Courier Prime', Courier, monospace;
+            font-size: 12pt;
+        }
+    }
 
     .container, .viewer-pane {
         display: block !important;
