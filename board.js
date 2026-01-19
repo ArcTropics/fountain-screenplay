@@ -67,6 +67,11 @@ const BoardApp = {
                 swapThreshold: 0.65     // Makes it easier to trigger a swap
             });
         }
+        const textarea = card.querySelector('textarea');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
     },
 
     commit() {

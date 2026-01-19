@@ -363,6 +363,29 @@ textarea {
     font-weight: bold;
 }
 
+/**** AUTOCOMEPLETE ****/
+#autocomplete-list {
+    position: fixed; /* Changed from absolute to fixed for testing */
+    background: #222 !important;
+    color: #fff !important;
+    border: 2px solid #0fa9e5 !important; /* Bright green border */
+    border-radius: 4px;
+    z-index: 9999 !important;
+    min-width: 200px;
+    box-shadow: 0px 5px 15px rgba(0,0,0,0.7);
+    display: none; /* Controlled by JS */
+}
+
+.autocomplete-item {
+    padding: 10px;
+    border-bottom: 1px solid #444;
+    cursor: pointer;
+}
+
+.autocomplete-item:hover, .autocomplete-item.active {
+    background-color: #0fa9e5;
+}
+
 
 /* --- Screenplay (Output) Styling --- */
 #output {

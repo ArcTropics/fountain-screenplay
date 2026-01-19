@@ -20,9 +20,9 @@ JOHN
 What is this application?
 
 JANE
-This is a free Screenwriting app using "fountain" syntax
+This is a free Screenwriting app called  OpenDraft which uses "fountain" syntax
 
-The reader wonders but continues.
+JOHN wonders. He looks confused.
 
 JOHN
 What is fountain?
@@ -34,9 +34,9 @@ JOHN
 Oh wow!
 
 JANE
-You can also hide or show the preview pane. You can print the script as well as export as PDF by printing as PDF.
+You can also hide or show the preview pane. You can print the script as well as export it as PDF by printing as PDF.
 
-John wonders. He takes another sip and puts down the cup.
+John wonders again. He takes another sip and puts down the cup.
 
 JOHN
 How can I find the syntax for fountain?
@@ -55,7 +55,7 @@ JANE
 The data for your script is stored on the browser, if you ever delete or Browser data your scripts will be gone. But until then every time you open this browser with the same profile your scripts will be available. you can edit them and they will be saved automatically.
 
 JOHN
-So how about if i want to save them somewhere else?
+So how about if I want to save them somewhere else?
 
 JANE
 You can click "Ctrl + S" to save the file as a .fountain or .md or .txt. You can also open a file by pressing "Ctrl + O".
@@ -72,4 +72,65 @@ JANE
 (continues)
 You can also show or hide notes for preview and print by pressing "Ctrl + m"
 
-            
+JOHN
+Looks Great!
+
+JANE
+Wait! There is a lot more. You can definitely save and open your files or chose to keep the files in the browser itself, but you can also Export your entire collection to a JSON file and reload it as well. This could help you keep backups and restore in case you lose your browser data.
+
+JOHN
+This is awesome. Does it have auto-complete feature?
+
+JANE
+Of course! If you type the INT. or EXT. at the beginning of a line you will be shown a list of previously present scenes. If you type character names in all caps, any character that has had a dialog previously will show up and you can select the one you want.
+
+JOHN
+This is making me think that maybe I should start writing the screenplay for my next big film or series.
+
+JANE
+Of course, you should. And in case you are confused about what scenes would come first or last, you can rearrange the order of the scenes. Just click on the Board View, which will open a Cork Board View where you can see the scenes as post it slips. Let's change the setting go to a dream sequence.
+
+FADE TO:
+
+EXT. SURFACE OF THE MOON - DAY  
+
+John and Jane are now in a dream sequence. Both are wearing a space suit
+
+JANE
+(old speaker voice)
+So now that we have 2 scenes. You can move them around till you are happy with your sequence. You can also alter the scenes within the Cork Board View. If you are happy, you can save changes and close the Cork Board View. The changes made int he Board view will reflect in your script.
+
+John is really surprised to be on the moon. He looks around.
+
+JOHN
+Wow! This is how Neil and Buzz felt like back in 1969.
+
+JANE
+(continues)
+Let's not get lost here in the dream world let's go back to the cafe so that we can showcase the Cork Board View.
+
+INT. CAFE - DAY
+
+John and Jane are back at the table in the cafe. 
+
+JANE
+So now, what do you think of Open Draft?
+
+JOHN
+I think I am loving it. What is that?
+
+John presses the "Outliner" button. It opens the Outline view on the right side.
+
+JOHN
+Oh! I can see all my scenes in the outline window on the right. What happens when I click on one.
+
+JANE
+It will take you to that scene.
+
+JOHN
+This is really starting to make me think that I have been writing screenplays the wrong way all my life. 
+
+JANE
+Well, let's not get carried away. I know these features are amazing but, OpenDraft is still a new, simple open source, web-based app, made by one person in his free time, so it definitely is NOT the best. but it is a great start, especially because it is FREE and open source. It will definitely get better with time as more users use it and give their feedback. If you would like to make it better, please go to GitHub and start making it better. 
+
+{{http://https://github.com/ArcTropics/fountain-screenplay}}

@@ -285,6 +285,7 @@ closeOutlineBtn.addEventListener('click', toggleOutline);
 //     }
 // });
 editor.addEventListener('input', () => {
+    scene_search();
     render(); // This updates the UI
     autoSave(); // This writes to LocalStorage
 });
@@ -521,7 +522,7 @@ editor.addEventListener('scroll', () => {
         const viewerMaxScroll = viewerPane.scrollHeight - viewerPane.clientHeight;
 
         // The Editor text for the title page is small (~5% of total text)
-        const editorTitleThreshold = 0.03;
+        const editorTitleThreshold = 0.01;
         const editorPercent = editorScrollTop / editorMaxScroll;
 
         let targetScroll;
@@ -572,6 +573,197 @@ viewerPane.addEventListener('scroll', () => {
         setTimeout(() => { isSyncingPreview = false; }, 50);
     }
 });
+
+
+// AUTOCOMEPLETING SCENES
+
+let sceneMemory = [];
+let activeIndex = -1;
+
+function scene_search() {
+    const cursorPos = editor.selectionStart;
+    const textBefore = editor.value.substring(0, cursorPos);
+    const lines = textBefore.split('\n');
+    const currentLine = lines[lines.length - 1]; // Keep original casing for check
+
+    // Trigger Logic:
+    // If it starts with INT. or EXT. (Scenes)
+    // OR if the line is ALL CAPS and at least 2 characters long (Characters)
+    const isSceneTrigger = currentLine.toUpperCase().startsWith("INT.") || currentLine.toUpperCase().startsWith("EXT.");
+    const isCharTrigger = currentLine.length >= 2 && currentLine === currentLine.toUpperCase() && !currentLine.startsWith(" ");
+
+    if (isSceneTrigger || isCharTrigger) {
+        showSuggestions(currentLine.toUpperCase(), cursorPos);
+    } else {
+        hideSuggestions();
+    }
+}
+
+// 1. Build the memory from existing text
+function updateSceneMemory() {
+    const text = editor.value;
+    const sceneRegex = /^((?:INT|EXT|EST|I\/E)\..*)/gm;
+
+    // This looks for: Start of line, Uppercase Name, Newline, then NON-empty line (Dialogue)
+    const charRegex = /^([A-Z][A-Z0-9\s\(\)\.]+)\n(?!\n|\s|$)/gm;
+
+    const scenes = text.match(sceneRegex) || [];
+    let characters = [];
+    let match;
+
+    while ((match = charRegex.exec(text)) !== null) {
+        const name = match[1].trim();
+        // Standard Fountain excludes:
+        const filter = ["INT.", "EXT.", "EST.", "I/E.", "CUT TO", "FADE "];
+        if (!filter.some(f => name.startsWith(f))) {
+            characters.push(name);
+        }
+    }
+
+    sceneMemory = [...new Set([...scenes, ...characters])].reverse();
+}
+
+function showSuggestions(input, pos) {
+    updateSceneMemory();
+    const list = document.getElementById('autocomplete-list') || createList();
+
+    const filtered = sceneMemory
+        .filter(item => item.startsWith(input) && item !== input)
+        .slice(0, 5);
+
+    if (filtered.length === 0) {
+        hideSuggestions();
+        return;
+    }
+
+    list.innerHTML = '';
+
+    // CHANGE THIS: Start at 0 so the first item is always active
+    activeIndex = 0;
+
+    filtered.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'autocomplete-item';
+
+        // ADD THIS: Apply the 'active' class immediately to the first item
+        if (index === activeIndex) div.classList.add('active');
+
+        const isScene = item.includes('.');
+        const icon = isScene ? 'movie' : 'person';
+
+        div.innerHTML = `
+            <span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle; margin-right:8px; opacity:0.6">${icon}</span>
+            <span class="item-text">${item}</span>
+        `;
+
+        div.onclick = () => applySuggestion(item);
+        list.appendChild(div);
+    });
+
+    const coords = getCursorXY(editor, pos);
+    const relativeY = coords.y - editor.scrollTop;
+
+    list.style.left = (coords.x) + "px";
+    list.style.top = (relativeY + 25) + "px";
+    list.style.display = 'block';
+}
+
+
+function applySuggestion(text) {
+    const cursorPos = editor.selectionStart;
+    const textBefore = editor.value.substring(0, cursorPos);
+    const textAfter = editor.value.substring(cursorPos);
+
+    // Replace the current line with the full suggestion
+    const lines = textBefore.split('\n');
+    lines[lines.length - 1] = text;
+
+    editor.value = lines.join('\n') + textAfter;
+    hideSuggestions();
+    editor.focus();
+    render(); // Update main UI
+}
+
+function hideSuggestions() {
+    const list = document.getElementById('autocomplete-list');
+    if (list) list.style.display = 'none';
+}
+
+function createList() {
+    const list = document.createElement('div');
+    list.id = 'autocomplete-list';
+    document.body.appendChild(list);
+    return list;
+}
+
+function getCursorXY(input, selectionPoint) {
+    const { offsetLeft, offsetTop } = input;
+
+    // Create a dummy element to mimic the textarea
+    const div = document.createElement('div');
+    const copyStyle = getComputedStyle(input);
+    for (const prop of copyStyle) {
+        div.style[prop] = copyStyle[prop];
+    }
+
+    div.style.position = 'absolute';
+    div.style.visibility = 'hidden';
+    div.style.whiteSpace = 'pre-wrap';
+    div.style.wordWrap = 'break-word';
+    div.style.height = 'auto';
+    div.style.width = input.offsetWidth + 'px';
+
+    // Fill with text up to the cursor
+    div.textContent = input.value.substring(0, selectionPoint);
+
+    // The "span" represents the cursor position
+    const span = document.createElement('span');
+    span.textContent = input.value.substring(selectionPoint) || '.';
+    div.appendChild(span);
+
+    document.body.appendChild(div);
+    const { offsetLeft: spanLeft, offsetTop: spanTop } = span;
+    document.body.removeChild(div);
+
+    return {
+        x: offsetLeft + spanLeft,
+        y: offsetTop + spanTop
+    };
+}
+
+editor.addEventListener('keydown', (e) => {
+    const list = document.getElementById('autocomplete-list');
+    if (!list || list.style.display === 'none') return;
+
+    const items = list.querySelectorAll('.autocomplete-item');
+
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeIndex = (activeIndex + 1) % items.length;
+        updateActiveItem(items);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeIndex = (activeIndex - 1 + items.length) % items.length;
+        updateActiveItem(items);
+    } else if (e.key === 'Enter' && activeIndex > -1) {
+        e.preventDefault();
+
+        // FIX: Grab ONLY the text content of the .item-text span
+        const cleanText = items[activeIndex].querySelector('.item-text').textContent;
+        applySuggestion(cleanText);
+    } else if (e.key === 'Escape') {
+        hideSuggestions();
+    }
+});
+
+function updateActiveItem(items) {
+    items.forEach((item, index) => {
+        item.classList.toggle('active', index === activeIndex);
+    });
+}
+
+/*************************/
+
 
 // board
 document.getElementById('boardToggleBtn').addEventListener('click', () => {
