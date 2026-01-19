@@ -75,6 +75,10 @@ function loadFromLibrary(name) {
     const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
     currentScriptTitle = name;
     editor.value = library[name] || "";
+
+    // Updates the browser tab to "Script Name | OpenDraft"
+    document.title = `${name} | OpenDraft`;
+
     localStorage.setItem('last_active_script', name);
     render();
     updateLibraryList();
@@ -262,24 +266,51 @@ function toggleOutline() {
 closeOutlineBtn.addEventListener('click', toggleOutline);
 
 // --- Updated Auto-Save & Render Logic ---
+// editor.addEventListener('input', () => {
+//     const scriptContent = editor.value;
+//
+//     // 1. Render the Preview & Outline
+//     const result = fountainInstance.parse(scriptContent);
+//     document.getElementById('output').innerHTML = result.html;
+//     renderOutline(result.outline);
+//
+//     // 2. AUTO-SAVE TO LIBRARY
+//     if (currentScriptTitle) {
+//         // Get the whole library
+//         const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
+//         // Update the specific active script
+//         library[currentScriptTitle] = scriptContent;
+//         // Save it back to storage
+//         localStorage.setItem('fountain_library', JSON.stringify(library));
+//     }
+// });
 editor.addEventListener('input', () => {
-    const scriptContent = editor.value;
-
-    // 1. Render the Preview & Outline
-    const result = fountainInstance.parse(scriptContent);
-    document.getElementById('output').innerHTML = result.html;
-    renderOutline(result.outline);
-
-    // 2. AUTO-SAVE TO LIBRARY
-    if (currentScriptTitle) {
-        // Get the whole library
-        const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
-        // Update the specific active script
-        library[currentScriptTitle] = scriptContent;
-        // Save it back to storage
-        localStorage.setItem('fountain_library', JSON.stringify(library));
-    }
+    render(); // This updates the UI
+    autoSave(); // This writes to LocalStorage
 });
+
+function autoSave() {
+    if (!currentScriptTitle) return;
+
+    const titleEl = document.getElementById('currentActiveTitle');
+
+    // 1. Mark as "Dirty" (Unsaved) - Tiny Gray Tick
+    if (titleEl) {
+        titleEl.innerHTML = `Editing: ${currentScriptTitle} <span class="material-symbols-outlined" style="font-size: 18px; color: #888; vertical-align: middle; margin-left: 5px; font-weight: 700;">check</span>`;
+    }
+
+    // 2. Perform the actual Save
+    const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
+    library[currentScriptTitle] = editor.value;
+    localStorage.setItem('fountain_library', JSON.stringify(library));
+
+    // 3. Mark as "Clean" (Saved) - Green Tick
+    setTimeout(() => {
+        if (titleEl) {
+            titleEl.innerHTML = `Editing: ${currentScriptTitle} <span class="material-symbols-outlined" style="font-size: 18px; color: #4CAF50; vertical-align: middle; margin-left: 5px; font-weight: 700;">check</span>`;
+        }
+    }, 1000);
+}
 
 function renderOutline(outline) {
     const list = document.getElementById('outlineList');
