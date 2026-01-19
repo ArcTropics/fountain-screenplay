@@ -514,66 +514,84 @@ const viewerPane = document.querySelector('.viewer-pane');
 
 // Scroll Editor -> Preview
 editor.addEventListener('scroll', () => {
-    if (!isSyncingPreview && container.classList.contains('show-preview')) {
-        isSyncingEditor = true;
+    if (isSyncingPreview || !container.classList.contains('show-preview')) return;
+    isSyncingEditor = true;
 
-        const editorScrollTop = editor.scrollTop;
-        const editorMaxScroll = editor.scrollHeight - editor.clientHeight;
-        const viewerMaxScroll = viewerPane.scrollHeight - viewerPane.clientHeight;
+    const anchors = getSyncAnchors();
+    const eTop = editor.scrollTop;
+    const eMax = editor.scrollHeight - editor.clientHeight;
+    const vMax = viewerPane.scrollHeight - viewerPane.clientHeight;
 
-        // The Editor text for the title page is small (~5% of total text)
-        const editorTitleThreshold = 0.01;
-        const editorPercent = editorScrollTop / editorMaxScroll;
+    if (!anchors || eMax <= 0 || vMax <= 0) return;
 
-        let targetScroll;
-
-        if (editorPercent < editorTitleThreshold) {
-            // Because the editor is "slow", we map a tiny editor movement
-            // to a large preview movement (0% - 25%)
-            const zonePercent = editorPercent / editorTitleThreshold;
-            targetScroll = (zonePercent * 0.25) * viewerMaxScroll;
-        } else {
-            // Normal sync for the rest of the script
-            const zonePercent = (editorPercent - editorTitleThreshold) / (1 - editorTitleThreshold);
-            targetScroll = (0.25 + zonePercent * 0.75) * viewerMaxScroll;
-        }
-
-        viewerPane.scrollTop = targetScroll;
-        setTimeout(() => { isSyncingEditor = false; }, 50);
+    let target;
+    if (eTop < anchors.editorAnchorY) {
+        // Zone 1: Title Page (Ratio-based mapping to the first heading)
+        const ratio = eTop / anchors.editorAnchorY;
+        target = ratio * anchors.viewerAnchorY;
+    } else {
+        // Zone 2: The Script (Linear mapping from first heading to bottom)
+        const eRemaining = eMax - anchors.editorAnchorY;
+        const vRemaining = vMax - anchors.viewerAnchorY;
+        const progress = (eTop - anchors.editorAnchorY) / eRemaining;
+        target = anchors.viewerAnchorY + (progress * vRemaining);
     }
+
+    viewerPane.scrollTop = target;
+    setTimeout(() => { isSyncingEditor = false; }, 10);
 });
 
 // Scroll Preview -> Editor
 viewerPane.addEventListener('scroll', () => {
-    if (!isSyncingEditor && container.classList.contains('show-preview')) {
-        isSyncingPreview = true;
+    if (isSyncingEditor || !container.classList.contains('show-preview')) return;
+    isSyncingPreview = true;
 
-        const viewerScrollTop = viewerPane.scrollTop;
-        const viewerMaxScroll = viewerPane.scrollHeight - viewerPane.clientHeight;
-        const editorMaxScroll = editor.scrollHeight - editor.clientHeight;
+    const anchors = getSyncAnchors();
+    const vTop = viewerPane.scrollTop;
+    const vMax = viewerPane.scrollHeight - viewerPane.clientHeight;
+    const eMax = editor.scrollHeight - editor.clientHeight;
 
-        // The Title Page is the first 25% of the Viewer (Page 1)
-        const previewTitleThreshold = 0.25;
-        const previewPercent = viewerScrollTop / viewerMaxScroll;
+    if (!anchors || vMax <= 0 || eMax <= 0) return;
 
-        let targetScroll;
-
-        if (previewPercent < previewTitleThreshold) {
-            // SLOW DOWN THE EDITOR:
-            // Map the large 25% preview area to only 5% of the editor text
-            const zonePercent = previewPercent / previewTitleThreshold;
-            targetScroll = (zonePercent * 0.03) * editorMaxScroll;
-        } else {
-            // SYNCED: After the first page, scroll at normal 1:1 ratio
-            const zonePercent = (previewPercent - previewTitleThreshold) / (1 - previewTitleThreshold);
-            targetScroll = (0.05 + zonePercent * 0.95) * editorMaxScroll;
-        }
-
-        editor.scrollTop = targetScroll;
-        setTimeout(() => { isSyncingPreview = false; }, 50);
+    let target;
+    if (vTop < anchors.viewerAnchorY) {
+        const ratio = vTop / anchors.viewerAnchorY;
+        target = ratio * anchors.editorAnchorY;
+    } else {
+        const vRemaining = vMax - anchors.viewerAnchorY;
+        const eRemaining = eMax - anchors.editorAnchorY;
+        const progress = (vTop - anchors.viewerAnchorY) / vRemaining;
+        target = anchors.editorAnchorY + (progress * eRemaining);
     }
+
+    editor.scrollTop = target;
+    setTimeout(() => { isSyncingPreview = false; }, 10);
 });
 
+// Helper to find the "Top of Script" in both views
+function getSyncAnchors() {
+    const lines = editor.value.split('\n');
+    const firstSceneIdx = lines.findIndex(line => /^(?:INT|EXT|EST|I\/E)\./i.test(line));
+
+    if (firstSceneIdx === -1) return null;
+
+    const editorLineHeight = parseFloat(getComputedStyle(editor).lineHeight);
+    // Editor Anchor: The exact pixel where the first scene starts
+    const editorAnchorY = firstSceneIdx * editorLineHeight;
+
+    // Viewer Anchor: The exact pixel where the first <h3> (Scene) starts
+    const previewHeadings = viewerPane.querySelectorAll('h3');
+    let viewerAnchorY = 0;
+    if (previewHeadings.length > 0) {
+        // We use getBoundingClientRect or offsetTop relative to the parent
+        const containerRect = viewerPane.getBoundingClientRect();
+        const headingRect = previewHeadings[0].getBoundingClientRect();
+        // This gives us the distance from the top of the scrollable area to the heading
+        viewerAnchorY = headingRect.top - containerRect.top + viewerPane.scrollTop - 50;
+    }
+
+    return { editorAnchorY, viewerAnchorY };
+}
 
 // AUTOCOMEPLETING SCENES
 

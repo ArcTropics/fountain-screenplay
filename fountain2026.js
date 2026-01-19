@@ -26,6 +26,31 @@
       line_break: /^ {2}$/gm
 
     };
+    // function to link
+    // --- UPDATED HELPER FUNCTION ---
+    var linkify = function (text) {
+        if (!text) return "";
+
+        let processed = text;
+
+        // 1. Handle Markdown-style links: [Text](URL)
+        // This regex captures [the label] and (the link)
+        const markdownLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+|www\.[^\s)]+)\)/g;
+        processed = processed.replace(markdownLinkRegex, function (match, label, url) {
+          const href = url.startsWith("http") ? url : "https://" + url;
+          return `<a href="${href}" target="_blank" class="fountain-link">${label}</a>`;
+        });
+
+        // 2. Handle Raw URLs: https://... or www....
+        // The negative lookbehind (?!...) ensures we don't re-process URLs already inside <a> tags
+        const rawUrlRegex = /\b(https?:\/\/[^\s<>]+|www\.[^\s<>]+(?=\s|$|[.,!?;]))(?![^<]*>|[^<>]*<\/a>)/g;
+        processed = processed.replace(rawUrlRegex, function (url) {
+          const href = url.startsWith("http") ? url : "https://" + url;
+          return `<a href="${href}" target="_blank" class="fountain-link">${url}</a>`;
+        });
+
+        return processed;
+    };
 
     var parse = function (script) {
       var source = script.replace(/\r\n|\r/g, '\n').concat('\n\n');
@@ -219,49 +244,46 @@
       }
 
       tokens.forEach(function(token) {
+        let text = token.text ? linkify(token.text) : "";
         switch (token.type) {
           case 'scene_heading':
-            // Use trim() to remove any accidental trailing spaces
-            let cleanText = token.text.trim();
-            // Remove the three dots from the template literal below
+            let cleanText = text.trim();
             html.push(`<h3>${cleanText}${token.scene_number ? '<span class="scene-number">'+token.scene_number+'</span>' : ''}</h3>`);
-            outlineData.push({ title: cleanText, line: token.line });
+            outlineData.push({ title: token.text.trim(), line: token.line });
             break;
           case 'section':
-            html.push(`<div class="section-heading" data-depth="${token.depth}">${token.text}</div>`);
+            html.push(`<div class="section-heading" data-depth="${token.depth}">${text}</div>`);
             break;
           case 'synopsis':
-            html.push(`<div class="synopsis">${token.text}</div>`);
+            html.push(`<div class="synopsis">${text}</div>`);
             break;
           case 'character':
-            // Removed the <div> wrapper that was causing the layout mess
-            html.push(`<h4 class="${token.dual ? 'dual' : ''}">${token.text}</h4>`);
+            html.push(`<h4 class="${token.dual ? 'dual' : ''}">${text}</h4>`);
             break;
           case 'dialogue':
-            html.push(`<p class="dialogue">${token.text}</p>`);
+            html.push(`<p class="dialogue">${text}</p>`);
             break;
           case 'parenthetical':
-              html.push(`<p class="parenthetical">${token.text}</p>`);
-              break;
-
+            html.push(`<p class="parenthetical">${text}</p>`);
+            break;
           case 'transition':
-            html.push(`<h2>${token.text}</h2>`);
+            html.push(`<h2>${text}</h2>`);
             break;
           case 'centered':
-            html.push(`<p class="centered">${token.text}</p>`);
+            html.push(`<p class="centered">${text}</p>`);
             break;
           case 'note':
-            html.push(`<div class="note">[[ ${token.text} ]]</div>`);
+            // Notes are great places for research links
+            html.push(`<div class="note">[[ ${text} ]]</div>`);
             break;
           case 'action':
-            html.push(`<p>${token.text}</p>`);
+            html.push(`<p>${text}</p>`);
             break;
           case 'page_break':
             html.push('<div class="page-break"></div>');
             break;
-
       // ... can add other cases (scene_heading, character, etc.)
-        }
+          }
       });
 
       return {
@@ -269,7 +291,6 @@
         html: html.join(''),
         outline: outlineData
       };
-
     };
 
     return { parse: parse };

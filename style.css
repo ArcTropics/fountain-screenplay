@@ -739,6 +739,25 @@ hr {
     border-top: 1px solid #333;
     margin: 20px 0;
 }
+.fountain-link {
+    color: #0fa9e5;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(15, 169, 229, 0.3);
+    transition: all 0.2s;
+}
+.fountain-link:hover {
+    color: #4dc3ff;
+    border-bottom-color: #4dc3ff;
+    background: rgba(15, 169, 229, 0.1);
+}
+
+@media print {
+    .fountain-link {
+        color: #000 !important;
+        text-decoration: underline;
+        border: none;
+    }
+}
 
 
 
