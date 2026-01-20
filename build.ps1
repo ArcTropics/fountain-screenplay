@@ -23,14 +23,14 @@ if ($confirmVersion -ne 'y') {
 # 2. Sync HTML
 Write-Host "`nSyncing index.html..." -ForegroundColor Blue
 $html = Get-Content index.html -Raw
-$html = $html -replace 'window\.APP_VERSION\s*=\s*".*?"', "window.APP_VERSION = `"$currentVer`Matched"
-$html = $html -replace '<span class="title_version">v.*?</span>', "<span class=`"title_version`">v$currentVer</span>"
+$html = $html -replace 'window\.APP_VERSION\s*=\s*".*?"', "window.APP_VERSION = `"$currentVer`""
+# $html = $html -replace '<span class="title_version">v.*?</span>', "<span class=`"title_version`">v$currentVer</span>"
 $html = $html -replace '<span class="version-badge">v.*?</span>', "<span class=`"version-badge`">v$currentVer</span>"
 $html | Set-Content index.html
 
 Write-Host "Done: index.html is now v$currentVer" -ForegroundColor Green
 
-# Optional: Open local server to check before committing
+# Open local server to check before committing
 Start-Process "http://localhost:6179" # Adjust this URL to your IIS path
 
 # ---------------------------------------------------------
