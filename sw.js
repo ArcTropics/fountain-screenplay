@@ -10,7 +10,6 @@ const urlsToCache = [
   './update.js',
   './board.js',
   './board.css',
-  './update.js',
   './icon-512.png',
   './welcome.fountain',
   './corkboard.webp'

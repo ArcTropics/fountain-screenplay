@@ -1,4 +1,4 @@
 {
-  "version": "2026.01.20.1425",
-  "notes": "UPDATES:\n- ForceUpdate will now check for version mismatch rather than higher Version\n- The Snooze update button added."
+  "version": "2026.01.20.1442",
+  "notes": "UPDATES:\n- Added feature if there is no script in the collection it will load Welcome.fountain"
 }

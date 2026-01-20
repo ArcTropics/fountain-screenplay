@@ -898,8 +898,50 @@ async function ensureLibraryNotEmpty() {
 }
 
 // Call this on window load
-window.addEventListener('load', ensureLibraryNotEmpty);
+function checkDefaultScript() {
+    const savedScript = localStorage.getItem('fountain-script');
 
+    // Check if it's null, undefined, or just empty whitespace
+    if (!savedScript || savedScript.trim().length === 0) {
+        loadWelcomeScript();
+    } else {
+        editor.value = savedScript;
+        updatePreview();
+    }
+}
+
+async function loadWelcomeScript() {
+    try {
+        const response = await fetch('welcome.fountain');
+        const text = await response.text();
+        editor.value = text;
+        updatePreview();
+    } catch (err) {
+        console.error("Could not load welcome script:", err);
+    }
+}
+
+function updatePreview() {
+    const editor = document.getElementById('editor'); // or your editor variable
+    const output = document.getElementById('output'); // or your output variable
+
+    if (!editor || !output) return;
+
+    // 1. Get the text from editor
+    const markdown = editor.value;
+
+    // 2. Use your fountain instance to parse it
+    // Assuming you named your instance 'fountain' or 'fountainInstance'
+    const result = fountainInstance.parse(markdown);
+
+    // 3. Update the HTML
+    output.innerHTML = result.html;
+
+    // 4. Update the Board (if you have that logic integrated)
+    if (window.updateBoard) {
+        window.updateBoard(result.tokens);
+    }
+}
 
 // --- 6. Initialization ---
 
@@ -916,6 +958,8 @@ function refreshApp() {
 
 window.addEventListener('DOMContentLoaded', () => {
     container.classList.add('show-preview');
+
+    checkDefaultScript();
 
     const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
     const lastActive = localStorage.getItem('last_active_script');

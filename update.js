@@ -33,9 +33,10 @@ const updateStyles = `
     }
 `;
 
-if (window.REJECTED_UPDATE) return;
+
 
 async function checkForUpdates() {
+  if (window.REJECTED_UPDATE) return;
     try {
         const response = await fetch(`version.json?t=${Date.now()}`, { cache: "no-store" });
         if (!response.ok) return;

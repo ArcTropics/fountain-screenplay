@@ -31,7 +31,7 @@ $html | Set-Content index.html
 Write-Host "Done: index.html is now v$currentVer" -ForegroundColor Green
 
 # Optional: Open local server to check before committing
-Start-Process "http://localhost/test-app/index.html" # Adjust this URL to your IIS path
+Start-Process "http://localhost:6179" # Adjust this URL to your IIS path
 
 # ---------------------------------------------------------
 # 3. Git Add and Commit
