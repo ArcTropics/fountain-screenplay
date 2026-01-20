@@ -1,4 +1,12 @@
 <!DOCTYPE html>
+<!--
+* APPLICATION NAME: OpenDraft
+* CREATOR: Vinimay Kaul
+* COMPANY: Arctropics OÜ
+* COPYRIGHT: MIT License
+* PURPOSE: This is the main index.html that loads the main app
+-->
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -14,6 +22,7 @@
     <script src="./fountain2026.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="board.js"></script>
+    <script src="update.js"></script>
 
     <script>
       if ('serviceWorker' in navigator) {
@@ -22,6 +31,11 @@
           .catch(err => console.log("Service Worker Failed", err));
       }
     </script>
+    <script>
+        //Current Version: Please change every update. This should match exactly with the version in version.json
+        window.APP_VERSION = "2026.01.20.1425Matched;
+    </script>
+
 </head>
 <body>
 
@@ -33,22 +47,21 @@
             </button>
             <div class="brand">
                 <img src="./icon-512.png" alt="OpenDraft Logo" height="32px">
-                <span class="logo-text">Open<b>Draft</b></span>
+                <span class="logo-text">Open<b>Draft&nbsp;&nbsp;|&nbsp;&nbsp;</b><span class="title_version">v2026.01.20.1425</span></span>
             </div>
         </div>
 
         <div class="actions">
-            <div class="control-group">
-                <button class="btn-icon" id="decreaseFont" title="Decrease Font (Ctrl+[)"><span class="material-symbols-outlined">remove</span></button>
-                <span id="fontSizeDisplay">18px</span>
-                <button class="btn-icon" id="increaseFont" title="Increase Font (Ctrl+])"><span class="material-symbols-outlined">add</span></button>
-            </div>
-
             <button id="mobile-toggle" class="btn btn-primary mobile-only" title="Toggle Preview (Ctrl+;)">
                 <span class="material-symbols-outlined">visibility</span>
             </button>
 
             <div class="nav-menu" id="navMenu">
+                <div class="control-group">
+                    <button class="btn-icon" id="decreaseFont" title="Decrease Font (Ctrl+[)"><span class="material-symbols-outlined">remove</span></button>
+                    <span id="fontSizeDisplay">18px</span>
+                    <button class="btn-icon" id="increaseFont" title="Increase Font (Ctrl+])"><span class="material-symbols-outlined">add</span></button>
+                </div>
                 <button class="btn" id="openBtn" title="Open from File (Ctrl+O)">
                     <span class="material-symbols-outlined">file_open</span>
                     <span>Open</span>
@@ -238,7 +251,7 @@
 
         <img src="./icon-512.png" alt="OpenDraft Logo" class="about-logo">
         <h2 class="about-title"><span class="logo-text">Open<b>Draft</b></span></h2>
-        <span class="version-badge">v2026.1.19</span>
+        <span class="version-badge">v2026.01.20.1425</span>
 
         <div class="about-info">
             <p>Created by <strong>Vinimay Kaul</strong></p>
@@ -268,3 +281,4 @@
   <script src="script.js"></script>
   </body>
 </html>
+

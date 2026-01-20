@@ -1,6 +1,13 @@
-// Fountain.js - Modernized for 2026
-// Based on Matt Daly's original, updated for full Fountain.io spec
-// modified by Vinimay Kaul
+/*
+* APPLICATION NAME: OpenDraft
+* CREATOR: Vinimay Kaul
+* COMPANY: Arctropics OÜ
+* COPYRIGHT: MIT License
+* PURPOSE:  This is the main index.html that loads the main app
+            Fountain.js - Modernized for 2026
+            Based on Matt Daly's original, updated for full Fountain.io spec
+            modified by Vinimay Kaul
+*/
 
 (function (root) {
   'use strict';

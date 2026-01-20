@@ -1,29 +1,40 @@
 const CACHE_NAME = 'fountain-v1';
-// IMPORTANT: Every path must be exactly correct relative to sw.js
-const ASSETS = [
+
+// Combined and corrected list
+const urlsToCache = [
   './',
   './index.html',
   './style.css',
   './script.js',
-  './fountain.min.js',
-  './icon-512.png' // Make sure this file actually exists in your repo!
+  './fountain2026.js', // Updated from .min.js
+  './update.js',
+  './board.js',
+  './board.css',
+  './update.js',
+  './icon-512.png',
+  './welcome.fountain',
+  './corkboard.webp'
 ];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      // We use map to log which specific file fails
+      // Use map + Promise.all so one failure doesn't kill the whole worker
       return Promise.all(
-        ASSETS.map(url => {
-          return cache.add(url).catch(err => console.error('Failed to cache:', url, err));
+        urlsToCache.map(url => {
+          return cache.add(url).catch(err => console.warn('Skipping missing file:', url));
         })
       );
     })
   );
+  // Force the waiting service worker to become active immediately
+  self.skipWaiting();
 });
 
-self.addEventListener('fetch', (e) => {
-  e.respondWith(
-    caches.match(e.request).then((res) => res || fetch(e.request))
-  );
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        fetch(event.request).catch(() => {
+            return caches.match(event.request);
+        })
+    );
 });

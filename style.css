@@ -1,3 +1,10 @@
+/*
+* APPLICATION NAME: OpenDraft
+* CREATOR: Vinimay Kaul
+* COMPANY: Arctropics OÜ
+* COPYRIGHT: MIT License
+* PURPOSE: This is the main styles file for everything except Board and Update
+*/
 :root {
     --nav-height: 60px;
     --sidebar-width: 40%; /* Desktop split ratio */
@@ -46,6 +53,10 @@ body.board-active .floating-status {
 
 a {
   color: #0fa9e5;
+}
+
+.title_version{
+  font-size: .7em;
 }
 
 

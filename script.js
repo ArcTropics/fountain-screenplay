@@ -1,3 +1,12 @@
+/*
+* APPLICATION NAME: OpenDraft
+* CREATOR: Vinimay Kaul
+* COMPANY: Arctropics OÜ
+* COPYRIGHT: MIT License
+* PURPOSE: This is the main editor's javascript file
+*/
+
+
 // --- DOM Elements ---
 const editor = document.getElementById('editor');
 const output = document.getElementById('output');
@@ -849,6 +858,49 @@ function highlightPreviewElement(index) {
 document.getElementById('boardToggleBtn').addEventListener('click', () => {
     BoardApp.launch(editor.value);
 });
+
+// CHECKING IF LIBRARY IS empty.. IF YES THEN PUT WELCOM.html
+async function ensureLibraryNotEmpty() {
+    // 1. Get the current library from localStorage
+    const STORAGE_KEY = 'openDraft_scripts';
+    let savedScripts = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+
+    // 2. If it's empty, fetch the local welcome file
+    if (savedScripts.length === 0) {
+        try {
+            console.log("Library is empty. Loading welcome.fountain...");
+
+            const response = await fetch('./welcome.fountain');
+            if (!response.ok) throw new Error("Could not find welcome.fountain");
+
+            const content = await response.text();
+
+            // 3. Create the default script object
+            const welcomeScript = {
+                id: 'welcome-' + Date.now(),
+                title: "Welcome to OpenDraft",
+                content: content,
+                lastModified: new Date().toISOString()
+            };
+
+            // 4. Save to library and update the app
+            savedScripts.push(welcomeScript);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(savedScripts));
+
+            // 5. Refresh your UI components
+            if (typeof renderLibrarySidebar === "function") renderLibrarySidebar();
+            if (typeof loadScriptIntoEditor === "function") loadScriptIntoEditor(welcomeScript.id);
+
+        } catch (err) {
+            console.error("Critical: Could not load default template.", err);
+        }
+    }
+}
+
+// Call this on window load
+window.addEventListener('load', ensureLibraryNotEmpty);
+
+
 // --- 6. Initialization ---
 
 function refreshApp() {
