@@ -175,6 +175,37 @@ body.board-active #board-pane {
     display: block !important; /* Show the preview */
 }
 
+.editor-wrapper {
+    display: flex; /* Puts gutter and editor side-by-side */
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background-color: #1e1e1e; /* Matches your theme */
+}
+
+#line-numbers {
+    width: 45px;
+    padding: 10px 5px; /* Matches textarea padding */
+    text-align: right;
+    color: #555; /* Dimmed color for numbers */
+    font-family: 'Courier New', Courier, monospace;
+    font-size: inherit; /* Syncs with editor font size */
+    user-select: none;
+    background-color: #1a1a1a;
+    border-right: 1px solid #333;
+    overflow: hidden;
+    pointer-events: none; /* Clicks go through to the editor */
+}
+
+#editor {
+    flex: 1; /* Takes up remaining space */
+    border: none;
+    resize: none;
+    outline: none;
+    padding: 10px;
+    line-height: 1.5; /* This is our "Golden Ratio" for sync */
+}
+
 
 /* --- Mobile Toggle Styles (The "One-at-a-time" Logic) --- */
 @media (max-width: 1024px) {
@@ -422,6 +453,44 @@ textarea {
     background-color: #0fa9e5;
 }
 
+/* The outliner window slider */
+#outlineSidebar {
+    /* Ensure the sidebar itself has a fixed height and allows scrolling */
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100vh;
+    width: 500px;
+    background: #1a1a1a;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+}
+
+#outlineSidebar.active {
+    transform: translateX(0);
+}
+
+#outlineList {
+    /* This is the specific container for the items */
+    flex: 1; /* Take up all space below the header/close button */
+    overflow-y: auto; /* ENABLE THE SCROLLBAR */
+    padding: 10px;
+    scrollbar-width: thin; /* Optional: Makes it look cleaner */
+    scrollbar-color: #444 #1a1a1a;
+}
+
+/* Ensure the items don't wrap weirdly */
+.outline-item {
+    cursor: pointer;
+    padding: 8px;
+    border-bottom: 1px solid #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
 /* --- Screenplay (Output) Styling --- */
 #output {

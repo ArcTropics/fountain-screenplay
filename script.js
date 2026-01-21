@@ -45,6 +45,8 @@ const closeAboutBtn = document.getElementById('closeAboutBtn');
 const outlineSidebar = document.getElementById('outlineSidebar');
 const closeOutlineBtn = document.getElementById('closeOutlineBtn');
 
+const syncToggleBtn = document.getElementById('syncScrollToggle');
+
 // Initialize Fountain
 const fountainInstance = new fountain();
 
@@ -54,6 +56,9 @@ let currentScriptTitle = null;
 // For Syn-Scrolling
 let isSyncingEditor = false;
 let isSyncingPreview = false;
+let isSyncScrollEnabled = true; // Global toggle state
+let isInternalScroll = false;
+
 
 // --- 1. Library & Sidebar Logic ---
 
@@ -309,9 +314,13 @@ closeOutlineBtn.addEventListener('click', toggleOutline);
 //     }
 // });
 editor.addEventListener('input', () => {
+    updateGutter();
     scene_search();
     render(); // This updates the UI
     autoSave(); // This writes to LocalStorage
+
+    const lineNumbersDiv = document.getElementById('line-numbers');
+    lineNumbersDiv.scrollTop = editor.scrollTop;
 });
 
 function autoSave() {
@@ -448,25 +457,22 @@ function getLineTop(lineNumber) {
     const style = window.getComputedStyle(editor);
     const ghost = document.createElement('div');
 
-    // Copy every visual style so the wrapping is identical
+    // Copy all visual styles
     const properties = [
         'direction', 'boxSizing', 'width', 'fontSize', 'fontFamily',
         'fontStyle', 'fontWeight', 'lineHeight', 'paddingTop',
-        'paddingBottom', 'paddingLeft', 'paddingRight', 'borderWidth',
-        'wordWrap', 'whiteSpace'
+        'paddingBottom', 'paddingLeft', 'paddingRight', 'wordWrap', 'whiteSpace'
     ];
     properties.forEach(prop => ghost.style[prop] = style[prop]);
 
-    ghost.style.position = 'absolute';
+    ghost.style.position = 'fixed'; // Ensures it starts at 0,0 for math
     ghost.style.visibility = 'hidden';
-    ghost.style.height = 'auto';
     ghost.style.top = '0';
+    ghost.style.left = '0';
 
-    // Fill ghost with text up to that line
     const lines = editor.value.split('\n');
     ghost.textContent = lines.slice(0, lineNumber).join('\n') + '\n';
 
-    // Add a marker at the very end
     const marker = document.createElement('span');
     marker.textContent = 'X';
     ghost.appendChild(marker);
@@ -534,63 +540,7 @@ function importAllScripts(event) {
 
 
 // Scroll Editor -> Preview
-const viewerPane = document.querySelector('.viewer-pane');
-
-// Scroll Editor -> Preview
-editor.addEventListener('scroll', () => {
-    if (isSyncingPreview || !container.classList.contains('show-preview')) return;
-    isSyncingEditor = true;
-
-    const anchors = getSyncAnchors();
-    const eTop = editor.scrollTop;
-    const eMax = editor.scrollHeight - editor.clientHeight;
-    const vMax = viewerPane.scrollHeight - viewerPane.clientHeight;
-
-    if (!anchors || eMax <= 0 || vMax <= 0) return;
-
-    let target;
-    if (eTop < anchors.editorAnchorY) {
-        // Zone 1: Title Page (Ratio-based mapping to the first heading)
-        const ratio = eTop / anchors.editorAnchorY;
-        target = ratio * anchors.viewerAnchorY;
-    } else {
-        // Zone 2: The Script (Linear mapping from first heading to bottom)
-        const eRemaining = eMax - anchors.editorAnchorY;
-        const vRemaining = vMax - anchors.viewerAnchorY;
-        const progress = (eTop - anchors.editorAnchorY) / eRemaining;
-        target = anchors.viewerAnchorY + (progress * vRemaining);
-    }
-
-    viewerPane.scrollTop = target;
-    setTimeout(() => { isSyncingEditor = false; }, 10);
-});
-
-// Scroll Preview -> Editor
-viewerPane.addEventListener('scroll', () => {
-    if (isSyncingEditor || !container.classList.contains('show-preview')) return;
-    isSyncingPreview = true;
-
-    const anchors = getSyncAnchors();
-    const vTop = viewerPane.scrollTop;
-    const vMax = viewerPane.scrollHeight - viewerPane.clientHeight;
-    const eMax = editor.scrollHeight - editor.clientHeight;
-
-    if (!anchors || vMax <= 0 || eMax <= 0) return;
-
-    let target;
-    if (vTop < anchors.viewerAnchorY) {
-        const ratio = vTop / anchors.viewerAnchorY;
-        target = ratio * anchors.editorAnchorY;
-    } else {
-        const vRemaining = vMax - anchors.viewerAnchorY;
-        const eRemaining = eMax - anchors.editorAnchorY;
-        const progress = (vTop - anchors.viewerAnchorY) / vRemaining;
-        target = anchors.editorAnchorY + (progress * eRemaining);
-    }
-
-    editor.scrollTop = target;
-    setTimeout(() => { isSyncingPreview = false; }, 10);
-});
+const viewer = document.querySelector('.viewer-pane'); // The scrollable container
 
 // Helper to find the "Top of Script" in both views
 function getSyncAnchors() {
@@ -703,11 +653,18 @@ function showSuggestions(input, pos) {
     });
 
     const coords = getCursorXY(editor, pos);
-    const relativeY = coords.y - editor.scrollTop;
+    // const relativeY = coords.y - editor.scrollTop;
 
-    list.style.left = (coords.x) + "px";
-    list.style.top = (relativeY + 25) + "px";
+    list.style.position = 'fixed';
+    list.style.left = coords.x + "px";
+    list.style.top = (coords.y + 25) + "px";
     list.style.display = 'block';
+
+    // Safety check: if the list goes off the bottom of the screen, show it ABOVE the cursor
+    const listRect = list.getBoundingClientRect();
+    if (coords.y + listRect.height > window.innerHeight) {
+        list.style.top = (coords.y - listRect.height - 5) + "px";
+    }
 }
 
 
@@ -739,37 +696,34 @@ function createList() {
 }
 
 function getCursorXY(input, selectionPoint) {
-    const { offsetLeft, offsetTop } = input;
-
-    // Create a dummy element to mimic the textarea
+    const rect = input.getBoundingClientRect(); // Get editor position on screen
     const div = document.createElement('div');
     const copyStyle = getComputedStyle(input);
+
     for (const prop of copyStyle) {
         div.style[prop] = copyStyle[prop];
     }
 
-    div.style.position = 'absolute';
+    div.style.position = 'fixed'; // Use fixed to match viewport
     div.style.visibility = 'hidden';
     div.style.whiteSpace = 'pre-wrap';
     div.style.wordWrap = 'break-word';
-    div.style.height = 'auto';
     div.style.width = input.offsetWidth + 'px';
 
-    // Fill with text up to the cursor
     div.textContent = input.value.substring(0, selectionPoint);
-
-    // The "span" represents the cursor position
     const span = document.createElement('span');
     span.textContent = input.value.substring(selectionPoint) || '.';
     div.appendChild(span);
 
     document.body.appendChild(div);
+    const spanRect = span.getBoundingClientRect();
     const { offsetLeft: spanLeft, offsetTop: spanTop } = span;
     document.body.removeChild(div);
 
     return {
-        x: offsetLeft + spanLeft,
-        y: offsetTop + spanTop
+        // Position relative to the editor container + the calculated span offset
+        x: rect.left + spanLeft,
+        y: rect.top + spanTop - input.scrollTop
     };
 }
 
@@ -806,16 +760,74 @@ function updateActiveItem(items) {
 
 /*************************/
 
+function updateGutter() {
+    const lineNumbersDiv = document.getElementById('line-numbers');
+    if (!lineNumbersDiv) return;
+
+    const lines = editor.value.split('\n');
+    const lineCount = lines.length;
+
+    const style = window.getComputedStyle(editor);
+    let lh = parseFloat(style.lineHeight);
+    const fs = style.fontSize;
+
+    // Force a fallback if lineHeight is 'normal'
+    if (isNaN(lh)) {
+        lh = parseFloat(fs) * 1.5;
+    }
+
+    // Build the giant string
+    let html = '';
+    for (let i = 1; i <= lineCount; i++) {
+        // We use px here to ensure the height is mathematically perfect
+        html += `<div style="height:${lh}px; line-height:${lh}px; font-size:${fs};">${i}</div>`;
+    }
+
+    lineNumbersDiv.innerHTML = html;
+}
+
+// Update the scroll listener to call the new virtual gutter logic
+editor.addEventListener('scroll', () => {
+    const lineNumbersDiv = document.getElementById('line-numbers');
+    if (lineNumbersDiv) {
+        lineNumbersDiv.scrollTop = editor.scrollTop;
+    }
+});
+
+// Keep the line numbers in sync with the editor's scroll position
+editor.addEventListener('scroll', () => {
+    const lineNumbersDiv = document.getElementById('line-numbers');
+    if (lineNumbersDiv) {
+        // Pixel-perfect sync
+        lineNumbersDiv.scrollTop = editor.scrollTop;
+    }
+});
+
 /**********   Click and highlight ***/
-editor.addEventListener('click', () => {
+editor.addEventListener('click', (e) => {
+    // --- PART 1: EDITOR SCROLLING (Using Coordinate Math) ---
+    // This part handles the "jump to center" for the textarea
+    const rect = editor.getBoundingClientRect();
+    const clickY = e.clientY - rect.top + editor.scrollTop;
+    const style = window.getComputedStyle(editor);
+    const lineHeight = parseFloat(style.lineHeight) || 24;
+    const visualLine = Math.floor(clickY / lineHeight);
+
+    editor.scrollTo({
+        top: (visualLine * lineHeight) - (editor.clientHeight / 2) + (lineHeight / 2),
+        behavior: 'smooth'
+    });
+
+    // --- PART 2: OUTPUT SYNC (Using the working Character-Count method) ---
+    // This part handles the Output/Preview highlighting and scrolling
     const textUpToCursor = editor.value.substring(0, editor.selectionStart);
     let clickedLine = textUpToCursor.split('\n').length - 1;
 
-    // Get tokens from the most recent parse
+    // Get fresh tokens
     const result = fountainInstance.parse(editor.value);
     const tokens = result.tokens;
 
-    // Fuzzy search: If we clicked an empty line, look upwards for the nearest token
+    // Fuzzy search: Find the nearest token by looking upwards
     let targetTokenIndex = -1;
     let lookUpLine = clickedLine;
 
@@ -840,18 +852,37 @@ editor.addEventListener('click', () => {
     }
 });
 
-function highlightPreviewElement(index) {
-    // Remove previous highlights
-    const oldHighlight = output.querySelector('.sync-highlight');
-    if (oldHighlight) oldHighlight.classList.remove('sync-highlight');
 
-    // Find the new element
+function highlightPreviewElement(index) {
+    const output = document.getElementById('output');
+
+    // Clear old highlights
+    output.querySelectorAll('.sync-highlight').forEach(el => el.classList.remove('sync-highlight'));
+
+    // Find the element with the matching index
     const element = output.querySelector(`[data-token-index="${index}"]`);
+
     if (element) {
         element.classList.add('sync-highlight');
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 }
+
+// Toggle Sync Scroll option
+syncToggleBtn.addEventListener('click', () => {
+    isSyncScrollEnabled = !isSyncScrollEnabled;
+
+    const icon = syncToggleBtn.querySelector('.material-symbols-outlined');
+    const text = syncToggleBtn.querySelector('.toggle-text');
+
+    if (isSyncScrollEnabled) {
+        icon.style.color = "#0fa9e5"; // Active color
+        text.innerText = "Sync ON";
+    } else {
+        icon.style.color = "#888"; // Disabled color
+        text.innerText = "Sync OFF";
+    }
+});
 
 
 // board
@@ -860,53 +891,37 @@ document.getElementById('boardToggleBtn').addEventListener('click', () => {
 });
 
 // CHECKING IF LIBRARY IS empty.. IF YES THEN PUT WELCOM.html
-async function ensureLibraryNotEmpty() {
-    // 1. Get the current library from localStorage
-    const STORAGE_KEY = 'openDraft_scripts';
-    let savedScripts = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+async function initializeLibrary() {
+    const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
+    const lastActive = localStorage.getItem('last_active_script');
 
-    // 2. If it's empty, fetch the local welcome file
-    if (savedScripts.length === 0) {
+    // 1. If library is totally empty, create the Welcome Script
+    if (Object.keys(library).length === 0) {
         try {
-            console.log("Library is empty. Loading welcome.fountain...");
-
+            console.log("Library is empty. Creating Welcome Script...");
             const response = await fetch('./welcome.fountain');
-            if (!response.ok) throw new Error("Could not find welcome.fountain");
-
+            if (!response.ok) throw new Error("File not found");
             const content = await response.text();
 
-            // 3. Create the default script object
-            const welcomeScript = {
-                id: 'welcome-' + Date.now(),
-                title: "Welcome to OpenDraft",
-                content: content,
-                lastModified: new Date().toISOString()
-            };
+            // Save into your existing library format
+            const welcomeTitle = "Welcome to OpenDraft";
+            library[welcomeTitle] = content;
+            localStorage.setItem('fountain_library', JSON.stringify(library));
 
-            // 4. Save to library and update the app
-            savedScripts.push(welcomeScript);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(savedScripts));
-
-            // 5. Refresh your UI components
-            if (typeof renderLibrarySidebar === "function") renderLibrarySidebar();
-            if (typeof loadScriptIntoEditor === "function") loadScriptIntoEditor(welcomeScript.id);
-
+            // Set as active and load it
+            loadFromLibrary(welcomeTitle);
         } catch (err) {
-            console.error("Critical: Could not load default template.", err);
+            console.error("Welcome script fetch failed:", err);
+            // Fallback if the fetch fails so the user isn't stuck
+            library["New Script"] = "";
+            localStorage.setItem('fountain_library', JSON.stringify(library));
+            loadFromLibrary("New Script");
         }
     }
-}
-
-// Call this on window load
-function checkDefaultScript() {
-    const savedScript = localStorage.getItem('fountain-script');
-
-    // Check if it's null, undefined, or just empty whitespace
-    if (!savedScript || savedScript.trim().length === 0) {
-        loadWelcomeScript();
-    } else {
-        editor.value = savedScript;
-        updatePreview();
+    // 2. If library has content, just load the last active one
+    else {
+        const titleToLoad = lastActive && library[lastActive] ? lastActive : Object.keys(library)[0];
+        loadFromLibrary(titleToLoad);
     }
 }
 
@@ -959,19 +974,9 @@ function refreshApp() {
 window.addEventListener('DOMContentLoaded', () => {
     container.classList.add('show-preview');
 
-    checkDefaultScript();
-
-    const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
-    const lastActive = localStorage.getItem('last_active_script');
-
-    if (Object.keys(library).length > 0) {
-        // This function sets editor.value
-        loadFromLibrary(lastActive && library[lastActive] ? lastActive : Object.keys(library)[0]);
-        // CRITICAL: Call render() here to process the loaded text into the Outline
-        render();
-    } else {
-        render(); // Renders empty state or default text
-    }
+    // This handles the Welcome logic AND the Library loading
+    initializeLibrary();
+    updateGutter();
 
     // Ensure the mobile toggle button icon reflects the starting state
     if (mobileToggle) {

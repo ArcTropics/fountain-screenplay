@@ -81,6 +81,10 @@
                     <span class="material-symbols-outlined">description</span>
                     <span>Notes</span>
                 </button>
+                <button id="syncScrollToggle" class="btn" title="Toggle Sync Scroll (Ctrl+Y)">
+                    <span class="material-symbols-outlined">sync</span>
+                    <span class="toggle-text">Sync ON</span>
+                </button>
                 <button class="btn" onclick="window.print()" title="Print (Ctrl+P)">
                     <span class="material-symbols-outlined">print</span>
                     <span>PDF</span>
@@ -134,9 +138,12 @@
   <!-- TEXTAREA SECTION -->
 
       <div class="container">
-          <div class="editor-pane">
-              <textarea id="editor" placeholder="Type your Fountain script here..."></textarea>
-          </div>
+        <div class="editor-pane">
+            <div class="editor-wrapper">
+                <div id="line-numbers"></div>
+                  <textarea id="editor" placeholder="Type your Fountain script here..." spellcheck="false"></textarea>
+                </div>
+              </div>
 
           <div class="viewer-pane">
           <div id="output"></div>
@@ -206,6 +213,3 @@
   <script src="script.js"></script>
   </body>
 </html>
-
-
-
