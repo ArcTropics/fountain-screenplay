@@ -10,6 +10,7 @@
 // --- DOM Elements ---
 const editor = document.getElementById('editor');
 const output = document.getElementById('output');
+const viewerPane = document.querySelector('.viewer-pane');
 const container = document.querySelector('.container');
 const titleDisplay = document.getElementById('currentActiveTitle');
 
@@ -216,6 +217,55 @@ window.addEventListener('keydown', (event) => {
     }
 });
 
+// Page calculation and current page Stats
+function updatePageStats() {
+    const allLines = output.querySelectorAll('[data-line]');
+    if (allLines.length === 0) return;
+
+    // 1. Total Lines
+    const lastLineNum = parseInt(allLines[allLines.length - 1].getAttribute('data-line'), 10);
+
+    const linesPerPage = 30.5;
+    // Total pages = Script pages + 1 for the title page
+    const totalPages = Math.ceil(lastLineNum / linesPerPage) + 1;
+
+    // 2. Find Current Line
+    const paneRect = viewerPane.getBoundingClientRect();
+    let currentLine = 0;
+
+    for (let line of allLines) {
+        if (line.getBoundingClientRect().bottom >= paneRect.top + 20) {
+            currentLine = parseInt(line.getAttribute('data-line'), 10);
+            break;
+        }
+    }
+
+    // 3. The "Smart" Page Calculation
+    let currentPage;
+    if (viewerPane.scrollTop < 50) {
+        // If we are at the very top, we are on the Title Page
+        currentPage = 1;
+    } else {
+        // Calculate page based on line, then add 1 for the title page
+        // We use Math.floor here so Line 1-31 is the first block of text
+        currentPage = Math.floor((currentLine - 1) / linesPerPage) + 2;
+    }
+
+    // Cap the currentPage so it doesn't exceed totalPages
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    const statsDisplay = document.getElementById('page-count-display');
+    if (statsDisplay) {
+        statsDisplay.innerText = `Page ${currentPage} of ~${totalPages}`;
+    }
+}
+
+// Trigger this whenever the user scrolls the output
+viewerPane.addEventListener('scroll', () => {
+    // We use requestAnimationFrame to make the update smooth and high-performance
+    updatePageStats();
+});
+
 // --- Rendering & Notes ---
 
 function render() {
@@ -225,31 +275,28 @@ function render() {
     if (!rawText.trim()) {
         output.innerHTML = `<div style="text-align:center;color:#888;margin-top:100px;"><p>Script is empty.</p></div>`;
         renderOutline([]);
+        // Update stats to show 0
+        const pageStatsElement = document.getElementById('page-count-display');
+        if (pageStatsElement) pageStatsElement.innerText = "Page 0 of 0";
         return;
     }
+
+    // 1. Parse the Fountain text
     const parsedData = fountainInstance.parse(rawText);
 
-    const lines = rawText.split('\n').length; // calculate lines
-    const estimatedPages = Math.max(1, Math.ceil(lines / 50)) + 1;
-
-    const pageStatsElement = document.getElementById('page-count-display');
-    if (pageStatsElement) {
-        // pageStatsElement.innerText = `Approx. ${estimatedPages} Page${estimatedPages > 1 ? 's' : ''}`;
-        pageStatsElement.innerText = `~${estimatedPages} Page${estimatedPages > 1 ? 's' : ''} (~${estimatedPages} min)`;
-    }
-
-    // NEW: Update Outline and Page Stats
-    renderOutline(parsedData.outline);
-
-    const pageStats = document.getElementById('page-stats');
-    if (pageStats) {
-        pageStats.innerText = `${estimatedPages} Page${estimatedPages > 1 ? 's' : ''} (~${estimatedPages} min)`;
-    }
-
+    // 2. Handle Custom Notes and Inject HTML FIRST
     let htmlOutput = parsedData.html;
     const customNoteRegex = /\{\{([\s\S]*?)\}\}/g;
     htmlOutput = htmlOutput.replace(customNoteRegex, (m, t) => `<div class="note">${t.trim()}</div>`);
+
+    // CRITICAL: We update the DOM before calculating page stats
     output.innerHTML = htmlOutput;
+
+    // 3. Update the Outline
+    renderOutline(parsedData.outline);
+
+    // 4. Run the Real Page Calculation (Now that output.innerHTML has [data-line] tags)
+    updatePageStats();
 }
 
 // Toggle PREVIEW

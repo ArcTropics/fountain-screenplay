@@ -1,4 +1,4 @@
 {
-  "version": "2026.01.22.1822",
-  "notes": "UPDATE: Added some nice UI features like Library and Outline closing on their own when user clicks on output or editor."
+  "version": "2026.01.22.2031",
+  "notes": "UPDATE: Added current page number at current position in output and fixed page number approximation logic"
 }

@@ -525,6 +525,8 @@ textarea {
     box-sizing: border-box;
     padding: 5vw;
     padding-bottom: 90vh !important;
+    overflow-y: auto;
+    position: relative;
 }
 
 /* Screenplay Elements Formatting */
@@ -902,14 +904,6 @@ hr {
     background: rgba(15, 169, 229, 0.1);
 }
 
-@media print {
-    .fountain-link {
-        color: #000 !important;
-        text-decoration: underline;
-        border: none;
-    }
-}
-
 
 
 /* --- Optimized Print Rules --- */
@@ -928,93 +922,117 @@ hr {
         display: none !important;
     }
 
-    page-break {
-          page-break-after: always;
-          counter-increment: page;
+  page-break {
+        page-break-after: always;
+        counter-increment: page;
+    }
+
+    /* Ensure page 1 starts after the Title Page */
+    .title-page {
+        counter-reset: page 0;
+    }
+
+  /* 1. Reset Global Layout to allow flow across multiple pages */
+  body, html {
+      overflow: visible !important;
+      height: auto !important;
+      background: white !important;
+      margin: 0 !important;
+      padding: 0 !important;
+  }
+
+  .top-nav,
+  .editor-pane,
+  .sidebar-left,
+  #librarySidebar,
+  .actions,
+  #currentActiveTitle,
+  #outlineSidebar,
+  .sidebar-right,
+  .btn {
+      display: none !important;
+  }
+
+  .fountain-link {
+      color: #000 !important;
+      text-decoration: underline;
+      border: none;
+  }
+
+  .scene-heading {
+        break-after: avoid;
+        break-inside: avoid;
+        margin-top: 1.5rem;
+    }
+
+  /* 2. Character Names: NEVER let them be the last line of a page */
+  .character {
+      break-after: avoid !important; /* avoid breaking after character name and dialog */
+      break-inside: avoid;
+  }
+
+  /* 4. Transitions (CUT TO:): Never start a page with a transition */
+  .transition {
+      break-before: avoid;
+  }
+  /* Standard Screenplay Print Settings */
+  @page {
+      size: letter;
+      margin: 1in /* Standard Screenplay Margins (Left is wider for holes) */
+
+      @top-right {
+          content: counter(page) ".";
+          font-family: 'Courier Prime', Courier, monospace;
+          font-size: 12pt;
       }
+  }
 
-      /* Ensure page 1 starts after the Title Page */
-      .title-page {
-          counter-reset: page 0;
-      }
-
-    /* 1. Reset Global Layout to allow flow across multiple pages */
-    body, html {
-        overflow: visible !important;
-        height: auto !important;
-        background: white !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    .top-nav,
-    .editor-pane,
-    .sidebar-left,
-    #librarySidebar,
-    .actions,
-    #currentActiveTitle,
-    #outlineSidebar,
-    .sidebar-right,
-    .btn {
-        display: none !important;
-    }
-
-    /* Standard Screenplay Print Settings */
-    @page {
-        size: letter;
-        margin: 1in 0.5in 1in 1.5in; /* Standard Screenplay Margins (Left is wider for holes) */
-
-        @top-right {
-            content: counter(page) ".";
-            font-family: 'Courier Prime', Courier, monospace;
-            font-size: 12pt;
-        }
-    }
-
-    .container, .viewer-pane {
-        display: block !important;
-        border: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        width: 100% !important;
-        display: block !important;
-        width: 100% !important;
-        height: auto !important;
-        margin: 0 !important;
-        padding: 0 !important; */
-        overflow: visible !important;
-        position: static !important; /* Crucial for page breaking */
-    }
+  .container, .viewer-pane {
+      display: block !important;
+      border: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      display: block !important;
+      width: 100% !important;
+      height: auto !important;
+      margin: 0 !important;
+      padding: 0 !important; */
+      overflow: visible !important;
+      position: static !important; /* Crucial for page breaking */
+  }
 
 
-    /* Remove the shadow box from the script */
-    #output {
-        box-shadow: none !important;
-        width: 100% !important;
-        padding: 0 !important;
-        border: none !important;
-        margin: 0 !important;
-        background: white !important;
-        display: block !important;
-        height: auto !important;
-        overflow: visible !important;
-    }
+  /* Remove the shadow box from the script */
+  #output {
+      box-shadow: none !important;
+      width: 100% !important;
+      padding: 0 !important;
+      border: none !important;
+      margin: 0 !important;
+      background: white !important;
+      display: block !important;
+      height: auto !important;
+      overflow: visible !important;
+      font-size: 12pt;
+      line-height: 1;
+  }
 
 
-    #output .note {
-        box-shadow: none !important;
-        display: block !important;
-        background-color: #f9f9f9 !important; /* Very light gray */
-        border: 1px dashed #ccc !important;
-        margin: 10px 0 !important;
-        padding: 10px !important;
-        page-break-inside: avoid; /* Prevents a note from splitting mid-sentence across two pages */
-    }
+  #output .note {
+      box-shadow: none !important;
+      display: block !important;
+      background-color: #f9f9f9 !important; /* Very light gray */
+      border: 1px dashed #ccc !important;
+      margin: 10px 0 !important;
+      padding: 10px !important;
+      page-break-inside: avoid; /* Prevents a note from splitting mid-sentence across two pages */
+  }
 
-    /*  'Hide Notes' toggle */
-    .hide-notes .note {
-        display: none !important;
-    }
+  /*  'Hide Notes' toggle */
+  .hide-notes .note {
+      display: none !important;
+  }
 }
 
 @page {size: letter; margin: 1in 1in 1in 1.5in;} /* Standard Screenplay margins */
