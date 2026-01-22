@@ -185,31 +185,32 @@ body.board-active #board-pane {
 
 #line-numbers {
     width: 5px;
-    padding: 10px 5px; /* Matches textarea padding */
+    margin-right: 12px;
+    padding: 10px 5px;
     text-align: right;
-    color: #555; /* Dimmed color for numbers */
+    color: #e55;
     font-family: 'Courier New', Courier, monospace;
-    font-size: inherit; /* Syncs with editor font size */
+    font-size: inherit;
     user-select: none;
     background-color: #1a1a1a;
     border-right: 1px solid #333;
     overflow: hidden;
-    pointer-events: none; /* Clicks go through to the editor */
+    pointer-events: none;
     position: relative;
     height: 100%;
 }
 
-.gutter-segment {
+/* .gutter-segment {
     display: block;
     width: 100%;
-}
+} */
 
-#gutter-inner {
+/* #gutter-inner {
     position: absolute;
     top: 0;
     width: 100%;
-    will-change: transform; /* Optimization for smooth scrolling */
-}
+    will-change: transform;
+} */
 
 #editor {
     flex: 1; /* Takes up remaining space */
@@ -484,7 +485,7 @@ textarea {
     transition: transform 0.3s ease;
 }
 
-#outlineSidebar.active {
+#outlineSidebar.open {
     transform: translateX(0);
 }
 

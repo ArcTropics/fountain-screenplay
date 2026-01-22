@@ -62,11 +62,15 @@ let currentScriptTitle = null;
 let isJumping = false;
 let targetLineForScroll = null;
 
-// --- 1. Library & Sidebar Logic ---
+//Library & Sidebar Logic ---
+
+function toggleLibrary(){
+  librarySidebar.classList.toggle('open');
+  updateLibraryList();
+}
 
 toggleLibraryBtn.addEventListener('click', () => {
-    librarySidebar.classList.toggle('open');
-    updateLibraryList();
+    toggleLibrary();
 });
 
 closeLibraryBtn.addEventListener('click', () => {
@@ -206,7 +210,8 @@ window.addEventListener('keydown', (event) => {
             case 'p': event.preventDefault(); window.print(); break;
             case 'm': event.preventDefault(); toggleNotes(); break;
             case ';': event.preventDefault(); togglePreview(); break;
-            case '\\': event.preventDefault(); toggleOutline(); break;
+            case ',': event.preventDefault(); toggleLibrary(); break;
+            case '.': event.preventDefault(); toggleOutline(); break;
         }
     }
 });
@@ -291,30 +296,11 @@ function toggleNotes() {
 
 // Toggle outline Sidebar
 function toggleOutline() {
-    outlineSidebar.classList.toggle('active');
+    outlineSidebar.classList.toggle('open');
 }
 
 closeOutlineBtn.addEventListener('click', toggleOutline);
 
-// --- Updated Auto-Save & Render Logic ---
-// editor.addEventListener('input', () => {
-//     const scriptContent = editor.value;
-//
-//     // 1. Render the Preview & Outline
-//     const result = fountainInstance.parse(scriptContent);
-//     document.getElementById('output').innerHTML = result.html;
-//     renderOutline(result.outline);
-//
-//     // 2. AUTO-SAVE TO LIBRARY
-//     if (currentScriptTitle) {
-//         // Get the whole library
-//         const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
-//         // Update the specific active script
-//         library[currentScriptTitle] = scriptContent;
-//         // Save it back to storage
-//         localStorage.setItem('fountain_library', JSON.stringify(library));
-//     }
-// });
 editor.addEventListener('input', () => {
     updateGutter();
     scene_search();
@@ -398,7 +384,7 @@ function syncOutputToLine(lineNum) {
         // setTimeout(() => {
         //     targetElement.classList.remove('sync-highlight');
         // }, 2000);
-        // commented becasue I don't want it to be unhighlihghted automatically. 
+        // commented becasue I don't want it to be unhighlihghted automatically.
     }
 }
 
@@ -844,6 +830,9 @@ function getCursorXY(input, selectionPoint) {
         x: rect.left + spanLeft,
         y: rect.top + spanTop - input.scrollTop
     };
+
+    //Also close the Library sidebar if open
+    librarySidebar.classList.toggle('close');
 }
 
 editor.addEventListener('keydown', (e) => {
@@ -918,6 +907,22 @@ function updateGutter() {
 editor.addEventListener('scroll', () => {
     updateGutter();
 });
+
+// function that closes the library sidebar
+function closeLibrary() {
+    if (librarySidebar.classList.contains('open')) {
+        librarySidebar.classList.remove('open');
+        console.log("Library closed via workspace interaction.");
+    }
+}
+
+// function close outliner
+function closeOutliner(){
+    if (outlineSidebar.classList.contains('open')) {
+        outlineSidebar.classList.remove('open');
+        console.log("Outliner closed.");
+    }
+}
 
 // Add listener to textarea to lookout of cursor changes and selectionStart
 document.addEventListener('selectionchange', () => {
@@ -1006,6 +1011,9 @@ editor.addEventListener('click', (e) => {
     const lineHeight = parseFloat(style.lineHeight) || 24;
     const visualLine = Math.floor(clickY / lineHeight);
 
+    // close Sidebar forlibrary
+    closeLibrary();
+
     editor.scrollTo({
         top: (visualLine * lineHeight) - (editor.clientHeight / 2) + (lineHeight / 2),
         behavior: 'smooth'
@@ -1049,6 +1057,10 @@ editor.addEventListener('click', (e) => {
 // listener for clicking the Preview window (Reverse Sync)
 output.addEventListener('click', (e) => {
     const target = e.target.closest('[data-line]');
+
+    //close outliner
+    closeOutliner();
+
     if (target) {
         const lineNum = parseInt(target.getAttribute('data-line'), 10);
         console.log("Output Clicked! HTML Line Attribute:", lineNum);
