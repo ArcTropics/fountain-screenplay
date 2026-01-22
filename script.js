@@ -54,11 +54,13 @@ let currentFontSize = 18;
 let currentScriptTitle = null;
 
 // For Syn-Scrolling
-let isSyncingEditor = false;
-let isSyncingPreview = false;
-let isSyncScrollEnabled = true; // Global toggle state
-let isInternalScroll = false;
+// let isSyncingEditor = false;
+// let isSyncingPreview = false;
+// let isSyncScrollEnabled = true; // Global toggle state
+// let isInternalScroll = false;
 
+let isJumping = false;
+let targetLineForScroll = null;
 
 // --- 1. Library & Sidebar Logic ---
 
@@ -346,6 +348,56 @@ function autoSave() {
     }, 1000);
 }
 
+//Sync And  Center Text area
+function syncAndCenter(lineNumber) {
+    if (lineNumber === undefined || lineNumber === null) return;
+
+    // 1. Get exact measurements from the editor
+    const style = window.getComputedStyle(editor);
+    const lineHeight = parseFloat(style.lineHeight) || 27;
+    const editorHeight = editor.clientHeight;
+
+    // 2. Select the text
+    const lines = editor.value.split('\n');
+    let charPos = 0;
+    for (let i = 0; i < lineNumber; i++) {
+        charPos += lines[i].length + 1;
+    }
+
+    editor.focus();
+    const lineLength = lines[lineNumber] ? lines[lineNumber].length : 0;
+    editor.setSelectionRange(charPos, charPos + lineLength);
+
+    // 3. Perform the scroll math (Same as your click logic)
+    // Target = (Top of Line) - (Half of Editor) + (Half of Line Height)
+    const scrollTarget = (lineNumber * lineHeight) - (editorHeight / 2) + (lineHeight / 2);
+
+    editor.scrollTo({
+        top: scrollTarget,
+        behavior: 'smooth'
+    });
+}
+
+// Scroll to the selection places
+function scrollToSelection() {
+    const textBeforeCursor = editor.value.substring(0, editor.selectionStart);
+    const lineIndex = textBeforeCursor.split('\n').length - 1;
+
+    // 1. Get the actual spacing from your CSS
+    const style = window.getComputedStyle(editor);
+    const lineHeight = parseFloat(style.lineHeight);
+
+    // 2. Calculate the pixel position of that line
+    const scrollTarget = lineIndex * lineHeight;
+
+    // 3. Scroll and Center it
+    // We subtract half the editor's height to put the line in the middle
+    editor.scrollTo({
+        top: scrollTarget - (editor.clientHeight / 2) + (lineHeight / 2),
+        behavior: 'smooth'
+    });
+}
+
 function renderOutline(outline) {
     const list = document.getElementById('outlineList');
     list.innerHTML = ''; // Clear previous
@@ -355,28 +407,49 @@ function renderOutline(outline) {
         div.className = 'outline-item';
         div.innerHTML = `<span class="material-symbols-outlined" style="font-size:14px">movie</span> ${item.title}`;
 
-        // Jump to line on click
+        // attach listener to outlines
         div.onclick = () => {
-            // 1. Move the cursor as before
-            const lines = editor.value.split('\n');
-            let charPos = 0;
-            for(let i = 0; i < item.line; i++) {
-                charPos += lines[i].length + 1;
-            }
-            editor.focus();
-            editor.setSelectionRange(charPos, charPos);
+            console.log("Outline Item Clicked! Target Line:", item.line);
+            isJumping = true;
+            targetLineForScroll = item.line;
 
-            // 2. Get the PIXEL PERFECT top position
-            const exactTop = getLineTop(item.line);
-
-            // 3. Scroll precisely to that pixel
-            editor.scrollTo({
-                top: exactTop,
-                behavior: 'smooth'
-            });
-
-            if (window.innerWidth < 1024) toggleOutline();
+            selectTextByLine(item.line);
         };
+        // Jump to line on click
+        // div.onclick = () => {
+        //     // 1. Move the cursor to the scene line (already working)
+        //     const lines = editor.value.split('\n');
+        //     let charPos = 0;
+        //     for(let i = 0; i < item.line; i++) {
+        //         charPos += lines[i].length + 1;
+        //     }
+        //     editor.focus();
+        //     editor.setSelectionRange(charPos, charPos);
+        //
+        //     // 2. ENHANCED MATH: Use getLineTop for pixel-perfect position
+        //     const exactTop = getLineTop(item.line);
+        //
+        //     // 3. CENTER THE EDITOR
+        //     // We take the exact pixel top and subtract half the viewport height
+        //     const centerOffset = (editor.clientHeight / 2);
+        //     const finalScrollTarget = exactTop - centerOffset;
+        //
+        //     editor.scrollTo({
+        //         top: finalScrollTarget,
+        //         behavior: 'smooth'
+        //     });
+        //
+        //     // 4. Sync the 5px gutter (since it's a separate scrollable div)
+        //     const lineNumbersDiv = document.getElementById('line-numbers');
+        //     if (lineNumbersDiv) {
+        //         lineNumbersDiv.scrollTop = finalScrollTarget;
+        //     }
+        //
+        //     if (window.innerWidth < 1024) toggleOutline();
+        // };
+
+
+
 
         list.appendChild(div);
     });
@@ -414,29 +487,51 @@ aboutDialog.addEventListener('click', (event) => {
 
 /************* Sidebar Right . Outline **********/
 function jumpToScene(lineNumber) {
-    const editor = document.getElementById('editor');
-    const lines = editor.value.split('\n');
+    const style = window.getComputedStyle(editor);
+    const lh = parseFloat(style.lineHeight) || 24;
 
-    // Calculate character position up to that line
+    // Move Cursor
+    const lines = editor.value.split('\n');
     let charIndex = 0;
     for (let i = 0; i < lineNumber; i++) {
-        charIndex += lines[i].length + 1; // +1 for the newline character
+        charIndex += lines[i].length + 1;
     }
-
-    // 1. Move the cursor
     editor.focus();
     editor.setSelectionRange(charIndex, charIndex);
 
-    // 2. Scroll the editor to that position
-    // We calculate line height to scroll accurately
-    const lineHeight = 24; // Match your CSS line-height
-    editor.scrollTop = lineNumber * lineHeight - (editor.clientHeight / 4);
+    // Center Scroll
+    const sceneTop = getLineTop(lineNumber);
+    const centerOffset = (editor.clientHeight / 2) - (lh / 2);
+    const finalScroll = sceneTop - centerOffset;
 
-    // 3. Close the library sidebar if on mobile
-    if (window.innerWidth < 1024) {
-        document.getElementById('librarySidebar').classList.remove('active');
-    }
+    editor.scrollTo({ top: finalScroll, behavior: 'smooth' });
+
+    const lineNumbersDiv = document.getElementById('line-numbers');
+    if (lineNumbersDiv) lineNumbersDiv.scrollTop = finalScroll;
 }
+
+// Function to move the editor and center the view
+function jumpToLine(lineIndex) {
+    if (lineIndex === undefined || lineIndex === null) return;
+
+    const lines = editor.value.split('\n');
+    let charPos = 0;
+    for (let i = 0; i < lineIndex; i++) {
+        charPos += lines[i].length + 1;
+    }
+
+    // Open the gate so the listener knows to center this
+    isJumping = true;
+
+    editor.focus();
+    const lineLength = lines[lineIndex] ? lines[lineIndex].length : 0;
+    editor.setSelectionRange(charPos, charPos + lineLength);
+
+    // Close the gate after a short delay to allow the listener to finish
+    setTimeout(() => { isJumping = false; }, 500);
+}
+
+
 
 function updateOutlineUI(outlineData) {
     const container = document.getElementById('outlineList');
@@ -760,37 +855,109 @@ function updateActiveItem(items) {
 
 /*************************/
 
+// CREATE LINE NUMBERS gutter
 function updateGutter() {
-    const lineNumbersDiv = document.getElementById('line-numbers');
-    if (!lineNumbersDiv) return;
+  return;
+    // const lineNumbersDiv = document.getElementById('line-numbers');
+    // if (!lineNumbersDiv) return;
+    //
+    // const style = window.getComputedStyle(editor);
+    // let lh = parseFloat(style.lineHeight);
+    // const fs = style.fontSize;
+    // if (isNaN(lh)) lh = parseFloat(fs) * 1.5;
+    //
+    // const scrollTop = editor.scrollTop;
+    // const viewHeight = editor.clientHeight;
+    //
+    // // 1. Calculate which line is at the top of the viewport
+    // const startLine = Math.floor(scrollTop / lh) + 1;
+    // // 2. Calculate how many lines can fit on the screen
+    // const linesToDraw = Math.ceil(viewHeight / lh) + 2;
+    // const totalLines = editor.value.split('\n').length;
+    //
+    // // 3. The "Shifter" moves only by the sub-pixel remainder of the scroll
+    // const offset = scrollTop % lh;
+    //
+    // let html = `<div id="gutter-shifter" style="position: absolute; top: ${-offset}px; width: 100%;">`;
+    // for (let i = 0; i < linesToDraw; i++) {
+    //     const lineNum = startLine + i;
+    //     if (lineNum <= totalLines) {
+    //         html += `<div style="height:${lh}px; line-height:${lh}px; font-size:${fs};">${lineNum}</div>`;
+    //     }
+    // }
+    // html += `</div>`;
+    //
+    // lineNumbersDiv.innerHTML = html;
+}
 
+// Ensure the scroll listener refreshes this window
+editor.addEventListener('scroll', () => {
+    updateGutter();
+});
+
+// Add listener to textarea to lookout of cursor changes and selectionStart
+document.addEventListener('selectionchange', () => {
+    if (isJumping && targetLineForScroll !== null && document.activeElement === editor) {
+
+        const mirror = document.createElement('div');
+        const style = window.getComputedStyle(editor);
+
+        // Copy styles exactly
+        const props = ['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'padding', 'width', 'boxSizing', 'whiteSpace', 'wordWrap'];
+        props.forEach(prop => mirror.style[prop] = style[prop]);
+
+        mirror.style.position = 'absolute';
+        mirror.style.visibility = 'hidden';
+        mirror.style.whiteSpace = 'pre-wrap'; // CRITICAL: Handles wrapping correctly
+        mirror.style.width = editor.clientWidth + 'px'; // Matches editor width
+
+        const textUpToSelection = editor.value.substring(0, editor.selectionStart);
+        mirror.textContent = textUpToSelection;
+
+        const span = document.createElement('span');
+        span.textContent = 'X';
+        mirror.appendChild(span);
+
+        document.body.appendChild(mirror);
+        const exactPixelTop = span.offsetTop;
+        document.body.removeChild(mirror);
+
+        // --- THE PRECISION ADJUSTMENT ---
+        // We must account for the editor's own padding-top which is in the CSS
+        const paddingTop = parseFloat(style.paddingTop) || 0;
+
+        // We want the 'exactPixelTop' to be in the center of the 'editor.clientHeight'
+        const finalScrollPosition = exactPixelTop - (editor.clientHeight / 2) + paddingTop;
+
+        console.log(`Line ${targetLineForScroll} is at ${exactPixelTop}px. Scrolling to: ${finalScrollPosition}px`);
+
+        editor.scrollTo({
+            top: finalScrollPosition,
+            behavior: 'smooth'
+        });
+
+        isJumping = false;
+        targetLineForScroll = null;
+    }
+});
+
+function selectTextByLine(lineIndex) {
     const lines = editor.value.split('\n');
-    const lineCount = lines.length;
-
-    const style = window.getComputedStyle(editor);
-    let lh = parseFloat(style.lineHeight);
-    const fs = style.fontSize;
-
-    // Force a fallback if lineHeight is 'normal'
-    if (isNaN(lh)) {
-        lh = parseFloat(fs) * 1.5;
+    let charPos = 0;
+    for (let i = 0; i < lineIndex; i++) {
+        charPos += lines[i].length + 1;
     }
-
-    // Build the giant string
-    let html = '';
-    for (let i = 1; i <= lineCount; i++) {
-        // We use px here to ensure the height is mathematically perfect
-        html += `<div style="height:${lh}px; line-height:${lh}px; font-size:${fs};">${i}</div>`;
-    }
-
-    lineNumbersDiv.innerHTML = html;
+    editor.focus();
+    const lineLength = lines[lineIndex] ? lines[lineIndex].length : 0;
+    editor.setSelectionRange(charPos, charPos + lineLength);
 }
 
 // Update the scroll listener to call the new virtual gutter logic
 editor.addEventListener('scroll', () => {
-    const lineNumbersDiv = document.getElementById('line-numbers');
-    if (lineNumbersDiv) {
-        lineNumbersDiv.scrollTop = editor.scrollTop;
+    const innerGutter = document.getElementById('gutter-inner');
+    if (innerGutter) {
+        // We move the numbers UP by the same amount the editor scrolls DOWN
+        innerGutter.style.transform = `translateY(-${editor.scrollTop}px)`;
     }
 });
 
@@ -852,6 +1019,24 @@ editor.addEventListener('click', (e) => {
     }
 });
 
+// Add event listener t o the output as well
+// listener for clicking the Preview window (Reverse Sync)
+output.addEventListener('click', (e) => {
+    const target = e.target.closest('[data-line]');
+    if (target) {
+        const lineNum = parseInt(target.getAttribute('data-line'), 10);
+        console.log("Output Clicked! HTML Line Attribute:", lineNum);
+
+        isJumping = true;
+        targetLineForScroll = lineNum;
+
+        selectTextByLine(lineNum);
+    } else {
+        console.log("Output clicked, but no [data-line] attribute found on element.");
+    }
+});
+
+// Highlight
 
 function highlightPreviewElement(index) {
     const output = document.getElementById('output');

@@ -1,4 +1,4 @@
 {
-  "version": "2026.01.20.1542",
-  "notes": "UPDATE:Fixed the Version location and build script bug. Igonore previous commit."
+  "version": "2026.01.22.1251",
+  "notes": "UPDATES:\n- Removed Sync Scroll and added both side sync on click.\n- ISSUE: THe outline sync needs to be fixed."
 }

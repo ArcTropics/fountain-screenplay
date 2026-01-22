@@ -152,7 +152,7 @@ body.board-active #board-pane {
     box-sizing: border-box;
     /* Zen padding for Desktop */
     padding: 60px 20%;
-    line-height: 1.6;
+    line-height: 1.5; // Change with caustion .. it might change the logic of scroll
     transition: padding 0.3s ease;
     padding-bottom: 90vh !important;
 }
@@ -184,7 +184,7 @@ body.board-active #board-pane {
 }
 
 #line-numbers {
-    width: 45px;
+    width: 5px;
     padding: 10px 5px; /* Matches textarea padding */
     text-align: right;
     color: #555; /* Dimmed color for numbers */
@@ -195,6 +195,20 @@ body.board-active #board-pane {
     border-right: 1px solid #333;
     overflow: hidden;
     pointer-events: none; /* Clicks go through to the editor */
+    position: relative;
+    height: 100%;
+}
+
+.gutter-segment {
+    display: block;
+    width: 100%;
+}
+
+#gutter-inner {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    will-change: transform; /* Optimization for smooth scrolling */
 }
 
 #editor {
@@ -204,6 +218,7 @@ body.board-active #board-pane {
     outline: none;
     padding: 10px;
     line-height: 1.5; /* This is our "Golden Ratio" for sync */
+    overflow:scroll;
 }
 
 

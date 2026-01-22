@@ -248,13 +248,16 @@
 
       tokens.forEach(function(token, index) {
         let text = token.text ? linkify(token.text) : "";
-        const idAttr = `data-token-index="${index}"`; // Unique identifier for each token
+
+        const absoluteLine = token.line;
+
+        // Now idAttr will work because absoluteLine is defined
+        const idAttr = `data-token-index="${index}" data-line="${absoluteLine}"`;
 
         switch (token.type) {
           case 'scene_heading':
-            let cleanText = text.trim();
-            html.push(`<h3 ${idAttr}>${cleanText}${token.scene_number ? '<span class="scene-number">'+token.scene_number+'</span>' : ''}</h3>`);
-            outlineData.push({ title: token.text.trim(), line: token.line });
+            html.push(`<h3 ${idAttr} >${text}</h3>`);
+            outlineData.push({ title: text, line: absoluteLine }); // Ensure absoluteLine is used
             break;
           case 'section':
             html.push(`<div ${idAttr} class="section-heading" data-depth="${token.depth}">${text}</div>`);
