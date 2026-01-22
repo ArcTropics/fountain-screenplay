@@ -758,7 +758,11 @@ textarea {
     background-color: rgba(15, 169, 229, 0.15);
     border-radius: 4px;
     position: relative;
-    transition: background-color 0.3s ease;
+    /* transition: background-color 0.3s ease; */
+
+    /* background-color: rgba(255, 220, 0, 0.3); /* Soft gold highlight */ */
+    transition: background-color 0.5s ease;
+    box-shadow: 0 0 10px rgba(15, 80, 125, 0.2);
 }
 
 /* The "Arrow" pointing to the line */

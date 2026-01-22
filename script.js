@@ -378,6 +378,30 @@ function syncAndCenter(lineNumber) {
     });
 }
 
+// Output syncing scrolls
+function syncOutputToLine(lineNum) {
+    // 1. Find the element in the Output/Preview that has this line number
+    const targetElement = output.querySelector(`[data-line="${lineNum}"]`);
+
+    if (targetElement) {
+        // 2. Scroll the Preview window to this element
+        targetElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center' // Puts the element in the vertical middle of the preview
+        });
+
+        // 3. Add a "Pulse" highlight effect
+        output.querySelectorAll('.sync-highlight').forEach(el => el.classList.remove('sync-highlight'));
+        targetElement.classList.add('sync-highlight');
+
+        //  Remove the highlight after 2 seconds
+        // setTimeout(() => {
+        //     targetElement.classList.remove('sync-highlight');
+        // }, 2000);
+        // commented becasue I don't want it to be unhighlihghted automatically. 
+    }
+}
+
 // Scroll to the selection places
 function scrollToSelection() {
     const textBeforeCursor = editor.value.substring(0, editor.selectionStart);
@@ -935,6 +959,8 @@ document.addEventListener('selectionchange', () => {
             top: finalScrollPosition,
             behavior: 'smooth'
         });
+
+        syncOutputToLine(targetLineForScroll);
 
         isJumping = false;
         targetLineForScroll = null;

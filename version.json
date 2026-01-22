@@ -1,4 +1,4 @@
 {
-  "version": "2026.01.22.1251",
-  "notes": "UPDATES:\n- Removed Sync Scroll and added both side sync on click.\n- ISSUE: THe outline sync needs to be fixed."
+  "version": "2026.01.22.1318",
+  "notes": "UPDATE: The Outline links also sync well with the output and editor and output is highlighted."
 }
