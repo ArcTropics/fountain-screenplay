@@ -1,4 +1,4 @@
 {
-  "version": "2026.01.22.2031",
-  "notes": "UPDATE: Added current page number at current position in output and fixed page number approximation logic"
+  "version": "2026.01.24.1210",
+  "notes": "UPDATE: Burger Menu is visible onl tablets even with 2 panes"
 }

@@ -1039,7 +1039,35 @@ hr {
 
 
 /* --- Desktop: Hide mobile-only buttons --- */
-/* .mobile-only { display: none !important; } */
+.mobile-only { display: none !important; }
+
+@media (max-width: 1600px) { /* Style for the dropdown menu when burger is clicked */
+
+  .mobile-only { display: block !important; }
+  .nav-menu {
+      display: none;
+      position: fixed;
+      top: 60px;
+      right: 10px;
+      background: #333;
+      flex-direction: column;
+      gap: 10px;
+      padding: 15px;
+      border-radius: 8px;
+      z-index: 2000;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  }
+
+  .nav-menu.active {
+      display: flex !important;
+  }
+
+  /* Make menu buttons full width inside the burger dropdown */
+  .nav-menu .btn {
+      width: 100%;
+      justify-content: flex-start;
+  }
+}
 
 @media (max-width: 1024px) {
     .mobile-only { display: inline-flex !important; }
@@ -1087,7 +1115,6 @@ hr {
     }
 }
 
-
 @media (max-width: 600px) {
     .top-nav { padding: 0 8px; }
     .brand { font-size: 0.9rem; margin-right: 5px; }
@@ -1116,8 +1143,8 @@ hr {
 }
 
 
-/* Style for the dropdown menu when burger is clicked */
-@media (max-width: 1024px) {
+
+/* @media (max-width: 1024px) {
     .nav-menu {
         display: none;
         position: fixed;
@@ -1136,9 +1163,9 @@ hr {
         display: flex !important;
     }
 
-    /* Make menu buttons full width inside the burger dropdown */
+    /* Make menu buttons full width inside the burger dropdown *//*
     .nav-menu .btn {
         width: 100%;
         justify-content: flex-start;
     }
-}
+} */
