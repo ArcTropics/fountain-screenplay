@@ -825,14 +825,26 @@ function applySuggestion(text) {
     const textBefore = editor.value.substring(0, cursorPos);
     const textAfter = editor.value.substring(cursorPos);
 
-    // Replace the current line with the full suggestion
+    // 1. Break text into lines
     const lines = textBefore.split('\n');
+
+    // 2. Replace the last line (the partial word/phrase) with the full suggestion
     lines[lines.length - 1] = text;
 
-    editor.value = lines.join('\n') + textAfter;
+    // 3. Calculate the new cursor position
+    // It's the length of all lines before + the suggestion length
+    const updatedTextBefore = lines.join('\n');
+    const newCursorPos = updatedTextBefore.length;
+
+    // 4. Update the editor value
+    editor.value = updatedTextBefore + textAfter;
+
+    // 5. CRITICAL: Move the cursor to the new position
+    editor.setSelectionRange(newCursorPos, newCursorPos);
+
     hideSuggestions();
     editor.focus();
-    render(); // Update main UI
+    render();
 }
 
 function hideSuggestions() {
