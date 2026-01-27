@@ -58,5 +58,8 @@ if ($confirmCommit -eq 'y') {
     }
 }
 
+Write-Host "Opening GitHub Project Actions!" -ForegroundColor Green
+Start-Process "https://github.com/ArcTropics/fountain-screenplay/actions" # Adjust this path to the github actions path
+
 Write-Host "`n--- Script Finished ---" -ForegroundColor Cyan
 pause

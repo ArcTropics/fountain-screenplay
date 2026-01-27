@@ -1,4 +1,4 @@
 {
-  "version": "2026.01.27.1147",
-  "notes": "Bug fixed: \n- When the user selected from the autocomplete list, the cursor would jump to the end of the content instead of end of the current update"
+  "version": "2026.01.28.1210",
+  "notes": "Added Feature: The spellcheck is now on on the textarea"
 }
