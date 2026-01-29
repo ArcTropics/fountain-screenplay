@@ -18,6 +18,7 @@ const titleDisplay = document.getElementById('currentActiveTitle');
 const toggleNotesBtn = document.getElementById('toggleNotesBtn');
 const togglePreviewBtn = document.getElementById('togglePreviewBtn');
 const mobileToggle = document.getElementById('mobile-toggle');
+const focusToggle = document.getElementById('focus-toggle');
 const burgerBtn = document.getElementById('burger-btn');
 const navMenu = document.getElementById('navMenu');
 
@@ -46,7 +47,6 @@ const closeAboutBtn = document.getElementById('closeAboutBtn');
 const outlineSidebar = document.getElementById('outlineSidebar');
 const closeOutlineBtn = document.getElementById('closeOutlineBtn');
 
-const syncToggleBtn = document.getElementById('syncScrollToggle');
 
 // Initialize Fountain
 const fountainInstance = new fountain();
@@ -54,14 +54,10 @@ const fountainInstance = new fountain();
 let currentFontSize = 18;
 let currentScriptTitle = null;
 
-// For Syn-Scrolling
-// let isSyncingEditor = false;
-// let isSyncingPreview = false;
-// let isSyncScrollEnabled = true; // Global toggle state
-// let isInternalScroll = false;
-
 let isJumping = false;
 let targetLineForScroll = null;
+
+let preview_state = "2";
 
 //Library & Sidebar Logic ---
 
@@ -136,6 +132,9 @@ if (burgerBtn) {
 if (mobileToggle) {
     mobileToggle.addEventListener('click', togglePreview);
 }
+if (focusToggle) {
+    focusToggle.addEventListener('click', toggleFocusMode);
+}
 
 // ---  Restored Font & File Operations ---
 
@@ -200,6 +199,14 @@ async function saveFile() {
 // ---  Keyboard Shortcuts ---
 
 window.addEventListener('keydown', (event) => {
+    // When escape key is pressed
+    if (event.key === 'Escape') {
+        if (container.classList.contains('focus-mode')) {
+            toggleFocusMode();
+        }
+        return; // Exit listener early
+    }
+
     const isControl = event.ctrlKey || event.metaKey;
     if (isControl) {
         if (event.code === 'BracketLeft') { event.preventDefault(); updateFontSize(-2); }
@@ -211,11 +218,13 @@ window.addEventListener('keydown', (event) => {
             case 'p': event.preventDefault(); window.print(); break;
             case 'm': event.preventDefault(); toggleNotes(); break;
             case ';': event.preventDefault(); togglePreview(); break;
+            case ':': event.preventDefault(); toggleFocusMode(); break;
             case ',': event.preventDefault(); toggleLibrary(); break;
             case '.': event.preventDefault(); toggleOutline(); break;
         }
     }
 });
+
 
 // Page calculation and current page Stats
 function updatePageStats() {
@@ -321,6 +330,27 @@ function togglePreview() {
     // 2. Always render when entering preview to ensure it's fresh
     if (isPreviewMode) {
         render();
+    }    
+}
+
+//function to make function readon only
+function toggleFocusMode() {
+    const isPreviewMode = container.classList.toggle('show-preview');
+
+    // 1. Clean up mobile states
+    container.classList.remove('show-preview');
+
+    // 2. Toggle the main mode
+    const isFocus = container.classList.toggle('focus-mode');
+
+    // 3. Handle Body Overflow (Prevents the main page from scrolling while reading)
+    document.body.style.overflow = isFocus ? 'hidden' : 'auto';
+
+    if (isFocus) {
+        render();
+    }
+    else if (preview_state==2){
+      togglePreview();
     }
 }
 
@@ -1150,21 +1180,7 @@ function highlightPreviewElement(index) {
     }
 }
 
-// Toggle Sync Scroll option
-syncToggleBtn.addEventListener('click', () => {
-    isSyncScrollEnabled = !isSyncScrollEnabled;
 
-    const icon = syncToggleBtn.querySelector('.material-symbols-outlined');
-    const text = syncToggleBtn.querySelector('.toggle-text');
-
-    if (isSyncScrollEnabled) {
-        icon.style.color = "#0fa9e5"; // Active color
-        text.innerText = "Sync ON";
-    } else {
-        icon.style.color = "#888"; // Disabled color
-        text.innerText = "Sync OFF";
-    }
-});
 
 
 // board

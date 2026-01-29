@@ -33,7 +33,7 @@
     </script>
     <script>
         //Current Version: Please change every update. This should match exactly with the version in version.json
-        window.APP_VERSION = "2026.01.28.1210";
+        window.APP_VERSION = "2026.01.29.1124";
     </script>
 
 </head>
@@ -54,6 +54,9 @@
         <div class="actions">
             <button id="mobile-toggle" class="btn btn-primary" title="Toggle Preview (Ctrl+;)">
                 <span class="material-symbols-outlined">visibility</span>
+            </button>
+            <button id="focus-toggle" class="btn btn-primary" title="Toggle Focus Mode (Ctrl+Shift+;)">
+                <span class="material-symbols-outlined">eyeglasses_2</span>
             </button>
 
             <div class="nav-menu" id="navMenu">
@@ -81,10 +84,10 @@
                     <span class="material-symbols-outlined">description</span>
                     <span>Notes</span>
                 </button>
-                <button id="syncScrollToggle" class="btn" title="Toggle Sync Scroll (Ctrl+Y)">
+                <!-- <button id="syncScrollToggle" class="btn" title="Toggle Sync Scroll (Ctrl+Y)">
                     <span class="material-symbols-outlined">sync</span>
                     <span class="toggle-text">Sync ON</span>
-                </button>
+                </button> -->
                 <button class="btn" onclick="window.print()" title="Print (Ctrl+P)">
                     <span class="material-symbols-outlined">print</span>
                     <span>PDF</span>
@@ -183,7 +186,7 @@
 
         <img src="./icon-512.png" alt="OpenDraft Logo" class="about-logo">
         <h2 class="about-title"><span class="logo-text">Open<b>Draft</b></span></h2>
-        <span class="version-badge">v2026.01.28.1210</span>
+        <span class="version-badge">v2026.01.29.1124</span>
 
         <div class="about-info">
             <p>Created by <strong>Vinimay Kaul</strong></p>

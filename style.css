@@ -1115,6 +1115,46 @@ hr {
     }
 }
 
+.container.focus-mode .sidebar,
+.container.focus-mode .editor-pane {
+    display: none !important;
+}
+
+.container.focus-mode .viewer-pane {
+    display: block !important;
+    width: 100% !important;
+    max-width: 1000px; /* Optional: keeps the script centered and readable */
+    margin: 0 auto;
+}
+.focus-mode .top-nav {
+    display: none !important;
+}
+
+/* Optional: Make the viewer take up the full screen height now that Nav is gone */
+.focus-mode .container {
+    height: 100vh !important;
+    width: 100%;
+    top: 0 !important;
+    background: var(--bg-color);
+}
+
+.container.focus-mode {
+    background-color: var(--bg-color); /* Uses your existing variable */
+    height: 100vh !important;
+    width: 100vw !important;
+    display: flex;
+    justify-content: center; /* Centers the paper horizontally */
+    overflow: hidden; /* Prevents double scrollbars */
+}
+
+.container.focus-mode .viewer-pane {
+    background-color: white; /* Or whatever your script paper color is */
+    max-width: 850px;       /* Standard script width */
+    height: 100vh;
+    box-shadow: 0 0 50px rgba(0,0,0,0.3); /* Adds depth to the "Focus" look */
+    overflow-y: auto;
+}
+
 @media (max-width: 600px) {
     .top-nav { padding: 0 8px; }
     .brand { font-size: 0.9rem; margin-right: 5px; }
