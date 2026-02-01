@@ -1,0 +1,90 @@
+/* cloud.css */
+.modal-overlay {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: #222;
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+    border: 1px solid #444;
+}
+
+.export-options {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.opt-btn {
+    flex: 1;
+    background: #333;
+    border: 2px solid #444;
+    padding: 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.opt-btn:hover { border-color: var(--accent-color, #007bff); }
+
+.opt-btn strong { display: block; font-size: 1rem; color: #fff; }
+.opt-btn span { font-size: 0.75rem; color: #aaa; }
+
+.provider-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.provider-btn {
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.gdrive { background: #4285F4; color: white; }
+.dropbox { background: #0061FF; color: white; }
+.onedrive { background: #0078D4; color: white; }
+
+.close-modal-btn {
+    margin-top: 25px;
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255,255,255,0.1);
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-state {
+    padding: 40px;
+}
