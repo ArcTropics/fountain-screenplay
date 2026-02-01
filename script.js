@@ -75,16 +75,62 @@ closeLibraryBtn.addEventListener('click', () => {
 });
 
 function updateLibraryList() {
-    const scripts = JSON.parse(localStorage.getItem('fountain_library') || '{}');
+    const rawLibrary = JSON.parse(localStorage.getItem('fountain_library') || '{}');
     scriptListContainer.innerHTML = '';
 
-    Object.keys(scripts).forEach(name => {
-        const div = document.createElement('div');
-        const isActive = (name === currentScriptTitle);
-        div.className = `script-item ${isActive ? 'active' : ''}`;
-        div.innerHTML = `<span>${name}</span><span class="delete-btn" onclick="event.stopPropagation(); deleteFromLibrary('${name}')">&times;</span>`;
-        div.onclick = () => loadFromLibrary(name);
-        scriptListContainer.appendChild(div);
+    Object.keys(rawLibrary).forEach(name => {
+        let project = rawLibrary[name];
+
+        // MIGRATION check (handles old string-based scripts)
+        if (typeof project === 'string') {
+            const firstId = `draft_${Date.now()}`;
+            project = {
+                activeDraftId: firstId,
+                drafts: [{
+                    id: firstId,
+                    name: "Main Draft",
+                    content: project,
+                    timestamp: new Date().toISOString()
+                }]
+            };
+            rawLibrary[name] = project;
+            localStorage.setItem('fountain_library', JSON.stringify(rawLibrary));
+        }
+
+        const folder = document.createElement('div');
+        folder.className = 'project-folder';
+        const isActiveProject = (name === currentScriptTitle);
+
+        folder.innerHTML = `
+            <div class="folder-header ${isActiveProject ? 'active-folder' : ''}">
+                <span>📁 ${name}</span>
+                <span class="delete-btn" title="Delete Project" onclick="event.stopPropagation(); deleteFromLibrary('${name}')">&times;</span>
+            </div>
+            <ul class="draft-list"></ul>
+        `;
+
+        const ul = folder.querySelector('ul');
+        project.drafts.forEach(draft => {
+            const li = document.createElement('li');
+            const isActiveDraft = (isActiveProject && project.activeDraftId === draft.id);
+            li.className = `draft-item ${isActiveDraft ? 'active' : ''}`;
+
+            // Added the delete-draft-btn here
+            li.innerHTML = `
+                <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                    <span><span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle;">description</span> ${draft.name}</span>
+                    <span class="delete-draft-btn" onclick="event.stopPropagation(); deleteDraft('${name}', '${draft.id}')">&times;</span>
+                </div>
+            `;
+
+            li.onclick = (e) => {
+                e.stopPropagation();
+                loadDraft(name, draft.id);
+            };
+            ul.appendChild(li);
+        });
+
+        scriptListContainer.appendChild(folder);
     });
 }
 
@@ -113,13 +159,55 @@ function deleteFromLibrary(name) {
     }
 }
 
+function deleteDraft(projectName, draftId) {
+    const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
+    const project = library[projectName];
+
+    if (!project) return;
+
+    // Safety check: Don't allow deleting the very last draft of a project
+    if (project.drafts.length <= 1) {
+        alert("A project must have at least one draft. To remove everything, delete the entire folder.");
+        return;
+    }
+
+    if (confirm(`Delete this draft? This cannot be undone.`)) {
+        // Remove the draft from the array
+        project.drafts = project.drafts.filter(d => d.id !== draftId);
+
+        // If we just deleted the active draft, switch to the most recent one remaining
+        if (project.activeDraftId === draftId) {
+            project.activeDraftId = project.drafts[project.drafts.length - 1].id;
+
+            // If this was the project we were currently looking at, reload the new active draft
+            if (currentScriptTitle === projectName) {
+                loadDraft(projectName, project.activeDraftId);
+            }
+        }
+
+        localStorage.setItem('fountain_library', JSON.stringify(library));
+        updateLibraryList();
+    }
+}
+
 createNewBtn.addEventListener('click', () => {
-    const name = prompt("Enter a name for your new script:");
+    const name = prompt("Enter a name for your new project:");
     if (name) {
         const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
-        library[name] = "";
+        const firstDraftId = `draft_${Date.now()}`;
+
+        library[name] = {
+            activeDraftId: firstDraftId,
+            drafts: [{
+                id: firstDraftId,
+                name: "Main Draft",
+                content: "",
+                timestamp: new Date().toISOString()
+            }]
+        };
+
         localStorage.setItem('fountain_library', JSON.stringify(library));
-        loadFromLibrary(name);
+        loadDraft(name, firstDraftId);
     }
 });
 
@@ -330,7 +418,7 @@ function togglePreview() {
     // 2. Always render when entering preview to ensure it's fresh
     if (isPreviewMode) {
         render();
-    }    
+    }
 }
 
 //function to make function readon only
@@ -391,24 +479,20 @@ editor.addEventListener('input', () => {
 function autoSave() {
     if (!currentScriptTitle) return;
 
-    const titleEl = document.getElementById('currentActiveTitle');
-
-    // 1. Mark as "Dirty" (Unsaved) - Tiny Gray Tick
-    if (titleEl) {
-        titleEl.innerHTML = `Editing: ${currentScriptTitle} <span class="material-symbols-outlined" style="font-size: 18px; color: #888; vertical-align: middle; margin-left: 5px; font-weight: 700;">check</span>`;
-    }
-
-    // 2. Perform the actual Save
     const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
-    library[currentScriptTitle] = editor.value;
-    localStorage.setItem('fountain_library', JSON.stringify(library));
+    const project = library[currentScriptTitle];
+    const draft = project.drafts.find(d => d.id === project.activeDraftId);
 
-    // 3. Mark as "Clean" (Saved) - Green Tick
-    setTimeout(() => {
+    if (draft) {
+        draft.content = editor.value;
+        localStorage.setItem('fountain_library', JSON.stringify(library));
+
+        // UI Feedback (Your existing green check logic)
+        const titleEl = document.getElementById('currentActiveTitle');
         if (titleEl) {
-            titleEl.innerHTML = `Editing: ${currentScriptTitle} <span class="material-symbols-outlined" style="font-size: 18px; color: #4CAF50; vertical-align: middle; margin-left: 5px; font-weight: 700;">check</span>`;
+            titleEl.innerHTML = `Editing: ${currentScriptTitle} <small>(${draft.name})</small> <span class="material-symbols-outlined" style="font-size: 18px; color: #4CAF50; vertical-align: middle;">check</span>`;
         }
-    }, 1000);
+    }
 }
 
 //Sync And  Center Text area
@@ -718,6 +802,130 @@ function importAllScripts(event) {
     reader.readAsText(file);
 }
 
+//********  CREATE NEW DRAFTS *************//
+
+// the code for new updated sidebar which allows drafts
+// Helper to get current project object
+function getCurrentProject() {
+    const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
+    return library[currentScriptTitle];
+}
+
+function loadDraft(projectName, draftId) {
+    const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
+    const project = library[projectName];
+    const draft = project.drafts.find(d => d.id === draftId);
+
+    if (draft) {
+        currentScriptTitle = projectName;
+        project.activeDraftId = draftId;
+        editor.value = draft.content;
+
+        localStorage.setItem('fountain_library', JSON.stringify(library));
+        localStorage.setItem('last_active_script', projectName);
+
+        document.title = `${projectName} (${draft.name}) | OpenDraft`;
+        render();
+        updateLibraryList();
+        librarySidebar.classList.remove('open');
+    }
+}
+
+// Global function to trigger from your new Toolbar Button
+function createNewDraft() {
+    if (!currentScriptTitle) {
+        alert("Please open or create a script first.");
+        return;
+    }
+
+    const draftName = prompt("Name this new draft (e.g., 'Revision 2', 'Clean Up'):");
+    if (!draftName) return;
+
+    const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
+    const project = library[currentScriptTitle];
+
+    const timestamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 12);
+    const newId = `draft_${Date.now()}`;
+
+    // Create the new draft using current editor content
+    const newDraft = {
+        id: newId,
+        name: `${draftName} (${timestamp})`,
+        content: editor.value, // This makes the copy of your current work
+        timestamp: new Date().toISOString()
+    };
+
+    project.drafts.push(newDraft);
+    project.activeDraftId = newId;
+
+    localStorage.setItem('fountain_library', JSON.stringify(library));
+
+    // Load it immediately
+    loadDraft(currentScriptTitle, newId);
+}
+
+
+
+function updateLibraryList() {
+    const rawLibrary = JSON.parse(localStorage.getItem('fountain_library') || '{}');
+    scriptListContainer.innerHTML = '';
+
+    Object.keys(rawLibrary).forEach(name => {
+        let project = rawLibrary[name];
+
+        // MIGRATION: If the data is just a string, convert it to the new Draft format
+        if (typeof project === 'string') {
+            const firstId = `draft_${Date.now()}`;
+            project = {
+                activeDraftId: firstId,
+                drafts: [{
+                    id: firstId,
+                    name: "Main Draft",
+                    content: project,
+                    timestamp: new Date().toISOString()
+                }]
+            };
+            // Save the migrated version back to the library
+            rawLibrary[name] = project;
+            localStorage.setItem('fountain_library', JSON.stringify(rawLibrary));
+        }
+
+        // --- RENDER LOGIC ---
+        const folder = document.createElement('div');
+        folder.className = 'project-folder';
+
+        const isActiveProject = (name === currentScriptTitle);
+
+        folder.innerHTML = `
+            <div class="folder-header ${isActiveProject ? 'active-folder' : ''}">
+                <span>📁 ${name}</span>
+                <span class="delete-btn" onclick="event.stopPropagation(); deleteFromLibrary('${name}')">&times;</span>
+            </div>
+            <ul class="draft-list"></ul>
+        `;
+
+        const ul = folder.querySelector('ul');
+        project.drafts.forEach(draft => {
+            const li = document.createElement('li');
+            const isActiveDraft = (isActiveProject && project.activeDraftId === draft.id);
+            li.className = `draft-item ${isActiveDraft ? 'active' : ''}`;
+            li.innerHTML = `
+                <span>
+                    <span class="material-symbols-outlined" style="font-size:16px; vertical-align:middle; margin-right:5px;">description</span>
+                    ${draft.name}
+                </span>
+                <span class="delete-draft-btn" title="Delete Draft" onclick="event.stopPropagation(); deleteDraft('${name}', '${draft.id}')">&times;</span>
+            `;
+            li.onclick = (e) => {
+                e.stopPropagation();
+                loadDraft(name, draft.id);
+            };
+            ul.appendChild(li);
+        });
+
+        scriptListContainer.appendChild(folder);
+    });
+}
 /**************************************/
 
 
@@ -1193,33 +1401,25 @@ async function initializeLibrary() {
     const library = JSON.parse(localStorage.getItem('fountain_library') || '{}');
     const lastActive = localStorage.getItem('last_active_script');
 
-    // 1. If library is totally empty, create the Welcome Script
     if (Object.keys(library).length === 0) {
-        try {
-            console.log("Library is empty. Creating Welcome Script...");
-            const response = await fetch('./welcome.fountain');
-            if (!response.ok) throw new Error("File not found");
-            const content = await response.text();
-
-            // Save into your existing library format
-            const welcomeTitle = "Welcome to OpenDraft";
-            library[welcomeTitle] = content;
-            localStorage.setItem('fountain_library', JSON.stringify(library));
-
-            // Set as active and load it
-            loadFromLibrary(welcomeTitle);
-        } catch (err) {
-            console.error("Welcome script fetch failed:", err);
-            // Fallback if the fetch fails so the user isn't stuck
-            library["New Script"] = "";
-            localStorage.setItem('fountain_library', JSON.stringify(library));
-            loadFromLibrary("New Script");
-        }
-    }
-    // 2. If library has content, just load the last active one
-    else {
+        // ... (Keep your existing Welcome Script fetch logic here) ...
+        // Just make sure when you save the welcome script, you save it as a project object
+    } else {
         const titleToLoad = lastActive && library[lastActive] ? lastActive : Object.keys(library)[0];
-        loadFromLibrary(titleToLoad);
+        const project = library[titleToLoad];
+
+        // If it's still a string (unmigrated), migration happens in updateLibraryList
+        // But for loading, we pick the active draft
+        const draftId = (typeof project === 'object') ? project.activeDraftId : null;
+
+        if (draftId) {
+            loadDraft(titleToLoad, draftId);
+        } else {
+            // Fallback for first-time migration load
+            updateLibraryList();
+            const migratedProject = JSON.parse(localStorage.getItem('fountain_library'))[titleToLoad];
+            loadDraft(titleToLoad, migratedProject.activeDraftId);
+        }
     }
 }
 

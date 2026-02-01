@@ -445,6 +445,67 @@ textarea {
     background: #676799;
     font-weight: bold;
 }
+//*******   drafts      ******/
+.project-folder {
+    margin-bottom: 10px;
+    border-bottom: 1px solid #333;
+}
+.folder-header {
+    padding: 10px;
+    font-weight: bold;
+    background: #222;
+    display: flex;
+    justify-content: space-between;
+}
+.draft-list {
+    list-style: none;
+    padding-left: 15px;
+    margin: 5px 0;
+}
+.draft-item {
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #bbb;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* This pushes the delete button to the right */
+    gap: 8px;
+    transition: background 0.2s;
+}
+
+.draft-item:hover {
+    background: #333;
+    color: #fff;
+}
+
+.draft-item.active {
+    color: #4CAF50;
+    font-weight: bold;
+    background: #2a2a2a;
+}
+
+/* The Delete Button */
+.delete-draft-btn {
+    opacity: 0;
+    color: #888;
+    font-size: 18px;
+    line-height: 1;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 2px 6px;
+    transition: opacity 0.2s, color 0.2s, transform 0.2s;
+}
+
+.draft-item:hover .delete-draft-btn {
+    opacity: 1;
+}
+
+.delete-draft-btn:hover {
+    color: #ff4d4d;
+    transform: scale(1.2);
+}
+
 
 /**** AUTOCOMEPLETE ****/
 #autocomplete-list {
