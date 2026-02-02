@@ -51,76 +51,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// 3. The Action Gateway
-// function handleCloudSave(provider) {
-//     let dataToSave;
-//     let fileName;
-//
-//     // Use specific targeting so we don't mess with the "About" dialog
-//     const cloudModal = document.getElementById('cloud-modal');
-//     const modalContent = cloudModal.querySelector('.modal-content');
-//
-//     if (exportType === 'current') {
-//         const editor = document.getElementById('editor');
-//         dataToSave = editor ? editor.value : "";
-//         fileName = "script_export.txt";
-//     } else {
-//         dataToSave = JSON.stringify(localStorage, null, 2);
-//         fileName = "collection_backup.json";
-//     }
-//
-//     if (!dataToSave || dataToSave === "{}" || dataToSave === "") {
-//         alert("Nothing to save!");
-//         return;
-//     }
-//
-//     // Save the original HTML to restore it later
-//     const originalHTML = modalContent.innerHTML;
-//
-//     // Show loading state inside the CORRECT modal
-//     modalContent.innerHTML = `
-//         <div class="loading-state">
-//             <div class="spinner"></div>
-//             <p>Connecting to ${provider}...</p>
-//         </div>
-//     `;
-//
-//     setTimeout(() => {
-//     // 1. Clear the loading state and show the Success Message
-//     modalContent.innerHTML = `
-//         <div class="success-state" style="padding: 20px; text-align: center;">
-//             <span class="material-symbols-outlined" style="font-size: 48px; color: #4CAF50;">check_circle</span>
-//             <p style="margin: 15px 0;">Successfully saved <strong>${fileName}</strong> to ${provider}!</p>
-//             <button id="cloud-success-close" class="btn" style="width: 100%; margin-top: 10px;">Done</button>
-//         </div>
-//     `;
-//
-//     // 2. Attach the close event to the NEWly created button
-//     const successBtn = document.getElementById('cloud-success-close');
-//     if (successBtn) {
-//         successBtn.onclick = () => {
-//             closeCloudModal();
-//
-//             // 3. Optional: Reset the modal back to its original state after it closes
-//             // so it's ready for the next time the user opens it.
-//             setTimeout(() => {
-//                 modalContent.innerHTML = originalHTML;
-//                 attachCloudListeners();
-//             }, 300);
-//         };
-//       }
-//     }, 2000);
-// }
 
-// cloud.js
-
-function handleCloudSave(provider) {
+unction handleCloudSave(provider) {
     const cloudModal = document.getElementById('cloud-modal');
     const modalContent = cloudModal.querySelector('.modal-content');
 
     if (!originalHTML) originalHTML = modalContent.innerHTML;
 
-    // 1. Get current date/time in YYYYMMDDHHmm format
     const now = new Date();
     const timestamp = now.getFullYear() +
         String(now.getMonth() + 1).padStart(2, '0') +
@@ -128,8 +65,12 @@ function handleCloudSave(provider) {
         String(now.getHours()).padStart(2, '0') +
         String(now.getMinutes()).padStart(2, '0');
 
-    // 2. Set default name based on export type
-    const defaultName = exportType === 'current' ? `script_${timestamp}` : `collection_${timestamp}`;
+    // Use currentScriptTitle if it exists, otherwise fallback to "script"
+    const baseName = (exportType === 'current' && window.currentScriptTitle)
+                     ? window.currentScriptTitle.replace(/\s+/g, '_')
+                     : (exportType === 'current' ? 'script' : 'full_collection');
+
+    const defaultName = `${baseName}_${timestamp}`;
 
     // 3. Update UI to ask for filename
     modalContent.innerHTML = `
@@ -182,29 +123,39 @@ function initGoogleDrive() {
 }
 
 async function executeUpload(fileNameFromInput) {
-    // Use the passed name or the one stored during auth popup
     const fileName = fileNameFromInput || window.pendingFileName || "untitled.txt";
-
     const cloudModal = document.getElementById('cloud-modal');
     const modalContent = cloudModal.querySelector('.modal-content');
+
     modalContent.innerHTML = `<div class="spinner"></div><p>Uploading ${fileName}...</p>`;
 
-    const content = exportType === 'current' ?
-                    document.getElementById('editor').value :
-                    JSON.stringify(localStorage);
+    // --- DATA PREPARATION ---
+    let content;
+    let mimeType;
+
+    if (exportType === 'current') {
+        // Save just the text currently in the editor
+        content = document.getElementById('editor').value;
+        mimeType = 'text/plain';
+    } else {
+        // Save the structured library (Projects + Drafts)
+        const libraryData = localStorage.getItem('fountain_library') || '{}';
+        content = libraryData;
+        mimeType = 'application/json';
+    }
 
     try {
         const folderId = await getOrCreateFolder("My Screenplays");
 
         const metadata = {
             name: fileName,
-            mimeType: exportType === 'current' ? 'text/plain' : 'application/json',
+            mimeType: mimeType,
             parents: [folderId]
         };
 
         const form = new FormData();
         form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-        form.append('file', new Blob([content], { type: metadata.mimeType }));
+        form.append('file', new Blob([content], { type: mimeType }));
 
         const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
             method: 'POST',
@@ -215,12 +166,13 @@ async function executeUpload(fileNameFromInput) {
         if (response.ok) {
             showSuccess(fileName, "Google Drive");
         } else {
-            throw new Error('Upload failed');
+            const errorData = await response.json();
+            throw new Error(errorData.error.message || 'Upload failed');
         }
     } catch (err) {
-        alert("Error: " + err.message);
+        alert("Cloud Error: " + err.message);
         modalContent.innerHTML = originalHTML;
-        attachCloudListeners();
+        if (window.attachCloudListeners) attachCloudListeners();
     }
 }
 
